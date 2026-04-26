@@ -1,0 +1,31 @@
+/*
+  # ─── Content Security Policy ────────────────────────────────────────────
+  # Default-deny everything, then explicitly allow what we need.
+  # Adding a new external source requires explicit user approval (see CLAUDE.md).
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+  # ─── Transport security ─────────────────────────────────────────────────
+  # Force HTTPS for two years and include subdomains. Submit to the HSTS preload list once you're confident.
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+  # ─── Clickjacking & MIME sniffing ───────────────────────────────────────
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+
+  # ─── Referrer ───────────────────────────────────────────────────────────
+  # Don't leak full URLs to other origins.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # ─── Permissions ────────────────────────────────────────────────────────
+  # Disable browser APIs we don't use. Add more as needed.
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()
+
+  # ─── Cross-origin isolation ─────────────────────────────────────────────
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+# Note on 'unsafe-inline' for styles:
+#   Tailwind compiles to a static stylesheet at build time, so the bulk of CSS is served from 'self'.
+#   'unsafe-inline' is here because Astro injects a small <style> block for component-scoped styles.
+#   If you want to remove it, configure Astro to extract all styles to external files and verify
+#   no third-party MDX usage injects inline styles.

@@ -1,0 +1,55 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import LessonLayout from '../../layouts/LessonLayout.astro';
+
+type Lesson = CollectionEntry<'lessons'>;
+
+export async function getStaticPaths() {
+  const allLessons = await getCollection('lessons', ({ data }) => !data.draft);
+
+  // Pre-compute the per-track sibling list once and attach it to each path's
+  // props. Within a track, siblings are sorted by `order`, which determines
+  // both the sidebar listing and prev/next arithmetic.
+  const byTrack = new Map<Lesson['data']['track'], Lesson[]>();
+  for (const lesson of allLessons) {
+    const list = byTrack.get(lesson.data.track) ?? [];
+    list.push(lesson);
+    byTrack.set(lesson.data.track, list);
+  }
+  for (const list of byTrack.values()) {
+    list.sort((a, b) => a.data.order - b.data.order);
+  }
+
+  return allLessons.map((lesson) => {
+    const siblings = byTrack.get(lesson.data.track) ?? [];
+    const idx = siblings.findIndex((s) => s.slug === lesson.slug);
+    const prev = idx > 0 ? siblings[idx - 1] : null;
+    const next = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
+
+    return {
+      params: { slug: lesson.slug },
+      props: { lesson, siblings, prev, next },
+    };
+  });
+}
+
+interface Props {
+  lesson: Lesson;
+  siblings: Lesson[];
+  prev: Lesson | null;
+  next: Lesson | null;
+}
+
+const { lesson, siblings, prev, next } = Astro.props as Props;
+const { Content, headings } = await lesson.render();
+---
+
+<LessonLayout
+  lesson={lesson}
+  siblings={siblings}
+  prev={prev}
+  next={next}
+  headings={headings}
+>
+  <Content />
+</LessonLayout>

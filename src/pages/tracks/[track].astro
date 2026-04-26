@@ -1,0 +1,141 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type TrackSlug = CollectionEntry<'lessons'>['data']['track'];
+
+const TRACK_META: Record<TrackSlug, { title: string; description: string }> = {
+  'it-basics': {
+    title: 'IT Basics',
+    description:
+      'How computers actually work, from a single NAND gate up through a working CPU and the operating system that runs on it.',
+  },
+  'artificial-intelligence': {
+    title: 'Artificial Intelligence',
+    description:
+      'What modern AI systems are doing under the hood — from a single neuron up through the models powering today’s tools.',
+  },
+  'programming': {
+    title: 'Programming',
+    description:
+      'Writing software: how to express ideas as code, structure a program, and debug what you build.',
+  },
+};
+
+export async function getStaticPaths() {
+  const lessons = await getCollection('lessons', ({ data }) => !data.draft);
+  const byTrack = new Map<TrackSlug, CollectionEntry<'lessons'>[]>();
+  for (const lesson of lessons) {
+    const list = byTrack.get(lesson.data.track) ?? [];
+    list.push(lesson);
+    byTrack.set(lesson.data.track, list);
+  }
+
+  return [...byTrack.entries()].map(([track, items]) => ({
+    params: { track },
+    props: { lessons: items },
+  }));
+}
+
+const { track } = Astro.params as { track: TrackSlug };
+const { lessons } = Astro.props as { lessons: CollectionEntry<'lessons'>[] };
+const meta = TRACK_META[track];
+
+const grouped = lessons.reduce<Record<string, CollectionEntry<'lessons'>[]>>((acc, lesson) => {
+  const key = lesson.data.module ?? '_general';
+  (acc[key] ||= []).push(lesson);
+  return acc;
+}, {});
+
+for (const key of Object.keys(grouped)) {
+  grouped[key].sort((a, b) => a.data.order - b.data.order);
+}
+
+const moduleOrder = Object.entries(grouped)
+  .map(([key, items]) => ({ key, firstOrder: items[0].data.order, items }))
+  .sort((a, b) => a.firstOrder - b.firstOrder);
+
+const moduleLabels: Record<string, string> = {
+  'hardware-basics': 'Hardware Basics',
+  '_general': 'Lessons',
+};
+---
+
+<!doctype html>
+<html lang="en" class="bg-apple-bg text-apple-text antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={meta.description} />
+    <title>{meta.title} — How Computers Work</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen font-sans">
+    <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-base font-semibold tracking-tight text-apple-text">
+          How Computers Work
+        </a>
+        <a
+          href="/about"
+          class="text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
+        >
+          About
+        </a>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-6 pt-20 pb-24 sm:pt-24">
+      <a
+        href="/"
+        class="mb-8 inline-flex items-center gap-1 text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
+      >
+        <span aria-hidden="true">←</span> All tracks
+      </a>
+
+      <h1 class="text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">{meta.title}</h1>
+      <p class="mt-6 max-w-2xl text-xl leading-relaxed text-apple-text-secondary">
+        {meta.description}
+      </p>
+
+      <div class="mt-20 space-y-16">
+        {
+          moduleOrder.map(({ key, items }) => (
+            <section>
+              <h2 class="mb-6 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                {moduleLabels[key] ?? key}
+              </h2>
+              <ol class="divide-y divide-apple-border/70 border-y border-apple-border/70">
+                {items.map((lesson) => (
+                  <li>
+                    <a
+                      href={`/lessons/${lesson.slug}`}
+                      class="group flex items-baseline justify-between gap-6 py-5 transition-colors duration-300 hover:text-apple-blue motion-reduce:transition-none"
+                    >
+                      <span class="flex items-baseline gap-5">
+                        <span class="font-mono text-sm text-apple-text-secondary">
+                          {String(lesson.data.order).padStart(2, '0')}
+                        </span>
+                        <span class="text-lg font-medium tracking-tight">
+                          {lesson.data.title}
+                        </span>
+                      </span>
+                      <span class="text-sm text-apple-text-secondary">
+                        {lesson.data.duration} min
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))
+        }
+      </div>
+    </main>
+
+    <footer class="border-t border-apple-border/60 py-10">
+      <div class="mx-auto max-w-6xl px-6 text-center text-sm text-apple-text-secondary">
+        How Computers Work
+      </div>
+    </footer>
+  </body>
+</html>

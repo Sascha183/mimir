@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(echo \"Started, PID: $!\")",
+      "Bash(curl -s -o /dev/null -w \"index: %{http_code}\\\\n\" http://localhost:4321/)",
+      "Bash(curl -s -o /dev/null -w \"what-computers-do: %{http_code}\\\\n\" http://localhost:4321/lessons/what-computers-do)",
+      "Bash(curl -s -o /dev/null -w \"the-nand-gate: %{http_code}\\\\n\" http://localhost:4321/lessons/the-nand-gate)",
+      "Bash(curl -s -o /dev/null -w \"old slug \\(should 404\\): %{http_code}\\\\n\" http://localhost:4321/lessons/01-what-computers-do)",
+      "Bash(npm test *)",
+      "Bash(grep -oE '\\(Previous|Next|Back|Finish\\)[^<]{0,60}' lessons/what-computers-do/index.html)",
+      "Bash(grep -oE '\\(Previous|Next|Back|Finish\\)[^<]{0,60}' lessons/the-nand-gate/index.html)",
+      "Bash(grep -oE 'aria-current=\"page\"[^>]*>[^<]{0,60}' lessons/the-nand-gate/index.html)",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

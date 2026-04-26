@@ -1,0 +1,60 @@
+---
+title: "The NAND Gate"
+track: "it-basics"
+module: "hardware-basics"
+order: 2
+duration: 7
+prerequisites: ["what-computers-do"]
+objectives:
+  - "Discover the rule a NAND gate follows by reasoning through a thought experiment"
+  - "Read a truth table and predict the output for any input combination"
+  - "Explain why NAND is the single building block all of computing is built from"
+components: ["NandGate", "SwitchRoom"]
+draft: false
+---
+
+import NandGate from '../../components/NandGate.tsx';
+import SwitchRoom from '../../components/SwitchRoom.tsx';
+
+The most fundamental part of every computer ever built is hiding in plain sight. We could just tell you what it is and how it works — but it sticks better if you discover it for yourself. So before we name anything, let's walk into a strange room.
+
+It's a bright sunny day. The windows are open, light is pouring in, and yet the ceiling lamp is on. That seems like a waste of electricity. You decide to turn it off.
+
+There are two switches on the wall by the door. Both are pointing down, which usually means *off* — and yet the light is on. Strange. You figure one of them must have been installed upside down. You flip the first switch up. Nothing happens. You flip it back down and try the second one. Nothing. You put the second one back. Still on.
+
+You start flipping switches at random, getting more annoyed by the second. Then, mid-frustration, the light blinks off for a fraction of a second. You stop. You back up. You try things slowly, one switch at a time.
+
+After a minute of careful experimenting, the rule clicks into place. The light goes off only when *both* switches are up. The moment either one drops back down, the light comes on again. One switch off, the other off, both off — light is on. Both on — light is off.
+
+Goofy. But you got what you wanted. You leave the room shaking your head.
+
+<SwitchRoom client:load />
+
+## The pattern
+
+That strange room is wired exactly like the most fundamental part of every computer. The two switches are inputs. The ceiling light is the output. The rule the room follows — both inputs on means the output is off, anything else means the output is on — is the rule a **NAND gate** follows.
+
+| Switch A | Switch B | Light |
+| --- | --- | --- |
+| off | off | on |
+| off | on | on |
+| on | off | on |
+| on | on | off |
+
+In one sentence: the output is off only when both inputs are on. Otherwise, the output is on.
+
+## Now in the language of computers
+
+Here's the same idea drawn the way engineers draw it — using **1** for "on" and **0** for "off", and the standard symbol for a NAND gate.
+
+<NandGate client:load />
+
+Try every combination. You should see exactly the pattern from the room: three combinations produce a 1, and only one — both inputs on — produces a 0. The "N" in NAND stands for "not": it's a NOT-AND, the opposite of an AND gate.
+
+## Why this gate, of all gates?
+
+There are other gates with their own names — AND, OR, NOT, XOR — and you'll meet them all soon. But the NAND gate has a remarkable property: **every other gate, and in fact every part of a computer, can be built by wiring NAND gates together**. Memory bits, adders, registers, the whole CPU — all of it is just NAND gates.
+
+This isn't an exaggeration or a thought experiment. Real chips are built this way. The NAND gate is the LEGO brick of computing.
+
+In the next lesson, you'll wire a NAND gate to itself and discover that this single move is enough to build a NOT gate — a gate that flips its input. From there, every other gate falls out one by one.

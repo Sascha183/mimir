@@ -1,0 +1,250 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import LessonNav from '../components/LessonNav.astro';
+
+type Lesson = CollectionEntry<'lessons'>;
+
+interface Props {
+  lesson: Lesson;
+  siblings: Lesson[];
+  prev: Lesson | null;
+  next: Lesson | null;
+  headings: MarkdownHeading[];
+}
+
+const { lesson, siblings, prev, next, headings } = Astro.props as Props;
+const { title, duration, objectives, track, module: moduleName, order } = lesson.data;
+
+const trackLabels: Record<typeof track, string> = {
+  'it-basics': 'IT Basics',
+  'artificial-intelligence': 'Artificial Intelligence',
+  'programming': 'Programming',
+};
+
+const trackHref = `/tracks/${track}`;
+const trackLabel = trackLabels[track];
+
+// Group sibling lessons by module for the sidebar — same approach as the track page.
+const grouped = siblings.reduce<Record<string, Lesson[]>>((acc, l) => {
+  const key = l.data.module ?? '_general';
+  (acc[key] ||= []).push(l);
+  return acc;
+}, {});
+const moduleOrder = Object.entries(grouped)
+  .map(([key, items]) => ({ key, firstOrder: items[0].data.order, items }))
+  .sort((a, b) => a.firstOrder - b.firstOrder);
+
+const moduleLabels: Record<string, string> = {
+  'hardware-basics': 'Hardware Basics',
+  '_general': 'Lessons',
+};
+
+// Right-rail outline: H2s only. The rail is omitted entirely when there are none.
+const outline = headings.filter((h) => h.depth === 2);
+---
+
+<!doctype html>
+<html lang="en" class="bg-apple-bg text-apple-text antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={`Lesson ${order}: ${title}`} />
+    <title>{title} — How Computers Work</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen font-sans">
+    <header class="sticky top-0 z-20 border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
+      <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-base font-semibold tracking-tight text-apple-text">
+          How Computers Work
+        </a>
+        <div class="flex items-center gap-6">
+          <a
+            href={trackHref}
+            class="text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
+          >
+            {trackLabel}
+          </a>
+          <a
+            href="/about"
+            class="text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
+          >
+            About
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <div class="mx-auto max-w-7xl px-6 py-12 lg:py-16">
+      <!--
+        Mobile lesson nav. <details> works without JS — keeps the strict CSP intact.
+        Hidden on md+ where the sticky sidebar takes over.
+      -->
+      <details class="lesson-nav-mobile mb-8 rounded-xl border border-apple-border bg-white md:hidden">
+        <summary class="cursor-pointer px-5 py-4 text-sm font-medium text-apple-text">
+          <span class="flex items-center justify-between">
+            <span>Lessons in {trackLabel}</span>
+            <span aria-hidden="true" class="text-apple-text-secondary">▾</span>
+          </span>
+        </summary>
+        <div class="border-t border-apple-border/70 px-5 py-4">
+          <LessonNav
+            moduleOrder={moduleOrder}
+            currentSlug={lesson.slug}
+            moduleLabels={moduleLabels}
+          />
+        </div>
+      </details>
+
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_200px] lg:gap-16">
+        <!-- LEFT: sticky lesson nav (md+) -->
+        <aside class="hidden md:block">
+          <div class="sticky top-24">
+            <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+              {trackLabel}
+            </p>
+            <LessonNav
+              moduleOrder={moduleOrder}
+              currentSlug={lesson.slug}
+              moduleLabels={moduleLabels}
+            />
+          </div>
+        </aside>
+
+        <!-- CENTER: lesson content -->
+        <article class="min-w-0">
+          <p class="mb-4 text-sm text-apple-text-secondary">
+            {moduleName ? `${moduleLabels[moduleName] ?? moduleName} · Lesson ${order}` : `Lesson ${order}`}
+            <span class="mx-2 text-apple-border">·</span>
+            {duration} min read
+          </p>
+          <h1 class="mb-10 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+            {title}
+          </h1>
+
+          <section class="mb-12 border-l-2 border-apple-blue/60 pl-6">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+              By the end of this lesson
+            </p>
+            <ul class="space-y-1.5 text-base text-apple-text">
+              {objectives.map((obj) => <li>{obj}</li>)}
+            </ul>
+          </section>
+
+          <div
+            class="prose prose-slate max-w-none
+                   prose-headings:font-semibold prose-headings:tracking-tight
+                   prose-h2:mt-16 prose-h2:text-3xl
+                   prose-h3:mt-10 prose-h3:text-xl
+                   prose-p:text-[1.0625rem] prose-p:leading-[1.7] prose-p:text-apple-text
+                   prose-a:text-apple-blue prose-a:no-underline hover:prose-a:underline
+                   prose-strong:text-apple-text prose-strong:font-semibold
+                   prose-blockquote:border-apple-blue prose-blockquote:not-italic
+                   prose-blockquote:font-normal prose-blockquote:text-apple-text"
+          >
+            <slot />
+          </div>
+
+          <!-- Prev/next nav -->
+          <nav
+            aria-label="Lesson navigation"
+            class="mt-20 grid gap-4 border-t border-apple-border/70 pt-10 sm:grid-cols-2"
+          >
+            {
+              prev ? (
+                <a
+                  href={`/lessons/${prev.slug}`}
+                  class="rounded-2xl border border-apple-border bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                    ← Previous
+                  </p>
+                  <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
+                    {prev.data.title}
+                  </p>
+                </a>
+              ) : (
+                <a
+                  href={trackHref}
+                  class="rounded-2xl border border-apple-border bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                    ← Back
+                  </p>
+                  <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
+                    {trackLabel} overview
+                  </p>
+                </a>
+              )
+            }
+            {
+              next ? (
+                <a
+                  href={`/lessons/${next.slug}`}
+                  class="rounded-2xl border border-apple-border bg-white p-6 text-right transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                    Next →
+                  </p>
+                  <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
+                    {next.data.title}
+                  </p>
+                </a>
+              ) : (
+                <a
+                  href={trackHref}
+                  class="rounded-2xl border border-apple-border bg-white p-6 text-right transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                    Finish →
+                  </p>
+                  <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
+                    Back to {trackLabel}
+                  </p>
+                </a>
+              )
+            }
+          </nav>
+        </article>
+
+        <!-- RIGHT: optional outline rail (lg+) -->
+        {
+          outline.length > 0 && (
+            <aside class="hidden lg:block">
+              <div class="sticky top-24">
+                <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                  On this page
+                </p>
+                <ul class="space-y-2 border-l border-apple-border/70 text-sm">
+                  {outline.map((h) => (
+                    <li>
+                      <a
+                        href={`#${h.slug}`}
+                        class="-ml-px block border-l border-transparent pl-4 leading-snug text-apple-text-secondary transition-colors duration-300 hover:border-apple-blue hover:text-apple-text motion-reduce:transition-none"
+                      >
+                        {h.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </aside>
+          )
+        }
+      </div>
+    </div>
+
+    <footer class="border-t border-apple-border/60 py-10">
+      <div class="mx-auto max-w-7xl px-6 text-center text-sm text-apple-text-secondary">
+        How Computers Work
+      </div>
+    </footer>
+
+    <style>
+      /* Hide the default disclosure triangle on the mobile lesson-nav <details>. */
+      .lesson-nav-mobile > summary { list-style: none; }
+      .lesson-nav-mobile > summary::-webkit-details-marker { display: none; }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+---
+title: "Building a NOT Gate"
+track: "it-basics"
+module: "hardware-basics"
+order: 3
+duration: 6
+prerequisites: ["the-nand-gate"]
+objectives:
+  - "Understand that a NAND gate can be reconfigured to behave like a different gate"
+  - "Build a NOT gate by tying both inputs of a NAND together"
+  - "Recognize that every gate in a computer is built from NAND gates wired in different ways"
+components: ["NotFromNand"]
+draft: false
+---
+
+import NotFromNand from '../../components/NotFromNand.tsx';
+
+Last lesson I told you the NAND gate is the only building block computers need. That sounds like a wild claim — every other kind of gate, every memory cell, every CPU, all from one part. Let me prove it. Starting with the simplest possible new gate I can build from a NAND.
+
+The trick is going to be ridiculous in its simplicity. So ridiculous that when you see it, you might feel a little cheated. Take the NAND gate from the last lesson. Don't add anything to it — no new parts, no new wires going anywhere clever. Just take the two inputs and *tie them together*, so they always get the same value at the same time. That's it. That's the whole move.
+
+<NotFromNand client:load />
+
+Why does that work? Look back at the NAND truth table. With two independent inputs, the gate has four possible input combinations: off-off, off-on, on-off, on-on. But the moment both inputs are forced to be the same value, two of those rows become impossible. The gate can only ever be in the *both-off* row or the *both-on* row. And in those two rows, the output is the opposite of the input — when both inputs are off, the output is on; when both are on, the output is off. That's a NOT gate.
+
+This new gate is so common — flipping a value comes up everywhere — that engineers gave it its own symbol so you don't have to keep drawing a NAND with the inputs joined: a small triangle pointing at a bubble, instead of the NAND's D-shape. Same internal mechanism, different drawing.
+
+In the next lesson, I'll combine this NOT with one more NAND and out will fall an AND gate. The pattern from here on is just rearrangement — the part list never changes.

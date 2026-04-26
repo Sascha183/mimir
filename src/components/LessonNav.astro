@@ -1,0 +1,51 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+type Lesson = CollectionEntry<'lessons'>;
+
+interface Props {
+  moduleOrder: { key: string; firstOrder: number; items: Lesson[] }[];
+  currentSlug: string;
+  moduleLabels: Record<string, string>;
+}
+
+const { moduleOrder, currentSlug, moduleLabels } = Astro.props as Props;
+---
+
+<nav aria-label="Lessons in this track" class="space-y-6">
+  {
+    moduleOrder.map(({ key, items }) => (
+      <div>
+        {moduleOrder.length > 1 && (
+          <p class="mb-2 text-[0.6875rem] font-semibold uppercase tracking-widest text-apple-text-secondary">
+            {moduleLabels[key] ?? key}
+          </p>
+        )}
+        <ol class="space-y-1">
+          {items.map((lesson) => {
+            const isCurrent = lesson.slug === currentSlug;
+            return (
+              <li>
+                <a
+                  href={`/lessons/${lesson.slug}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  class:list={[
+                    'block rounded-md px-3 py-2 text-sm leading-snug transition-colors duration-300 motion-reduce:transition-none',
+                    isCurrent
+                      ? 'bg-apple-blue/10 font-medium text-apple-blue'
+                      : 'text-apple-text-secondary hover:bg-black/[0.03] hover:text-apple-text',
+                  ]}
+                >
+                  <span class="mr-2 font-mono text-xs opacity-60">
+                    {String(lesson.data.order).padStart(2, '0')}
+                  </span>
+                  {lesson.data.title}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    ))
+  }
+</nav>

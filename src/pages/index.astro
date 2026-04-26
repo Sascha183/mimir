@@ -1,0 +1,149 @@
+---
+import { getCollection } from 'astro:content';
+
+const lessons = await getCollection('lessons', ({ data }) => !data.draft);
+
+const lessonCountByTrack = lessons.reduce<Record<string, number>>((acc, lesson) => {
+  acc[lesson.data.track] = (acc[lesson.data.track] ?? 0) + 1;
+  return acc;
+}, {});
+
+type Track = {
+  slug: 'it-basics' | 'artificial-intelligence' | 'programming';
+  title: string;
+  description: string;
+};
+
+const tracks: Track[] = [
+  {
+    slug: 'it-basics',
+    title: 'IT Basics',
+    description:
+      'How computers actually work, from a single NAND gate up through a working CPU and the operating system that runs on it.',
+  },
+  {
+    slug: 'artificial-intelligence',
+    title: 'Artificial Intelligence',
+    description:
+      'What modern AI systems are doing under the hood — from a single neuron up through the models powering today’s tools.',
+  },
+  {
+    slug: 'programming',
+    title: 'Programming',
+    description:
+      'Writing software: how to express ideas as code, structure a program, and debug what you build.',
+  },
+];
+---
+
+<!doctype html>
+<html lang="en" class="bg-apple-bg text-apple-text antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learn how technology actually works — hardware, AI, and programming, from first principles."
+    />
+    <title>How Computers Work</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen font-sans">
+    <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-base font-semibold tracking-tight text-apple-text">
+          How Computers Work
+        </a>
+        <a
+          href="/about"
+          class="text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
+        >
+          About
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="mx-auto max-w-5xl px-6 pt-28 pb-24 text-center sm:pt-36 sm:pb-32">
+        <h1 class="mx-auto max-w-4xl text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl">
+          Learn how technology actually works.
+        </h1>
+        <p class="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-apple-text-secondary sm:text-2xl">
+          Three tracks that build from the ground up. No prior experience required —
+          just curiosity about what's inside the machine.
+        </p>
+      </section>
+
+      <section class="mx-auto max-w-6xl px-6 pb-32">
+        <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            tracks.map((track) => {
+              const count = lessonCountByTrack[track.slug] ?? 0;
+              const hasContent = count > 0;
+
+              if (hasContent) {
+                return (
+                  <li>
+                    <a
+                      href={`/tracks/${track.slug}`}
+                      class="group flex h-full flex-col rounded-2xl border border-apple-border bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-apple-blue/40 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                    >
+                      <div class="mb-4 flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                          Track
+                        </span>
+                        <span class="text-xs font-medium text-apple-text-secondary">
+                          {count} lesson{count === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                      <h2 class="mb-3 text-2xl font-semibold tracking-tight text-apple-text">
+                        {track.title}
+                      </h2>
+                      <p class="flex-1 text-base leading-relaxed text-apple-text-secondary">
+                        {track.description}
+                      </p>
+                      <span class="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-apple-blue transition-transform duration-300 group-hover:gap-2.5 motion-reduce:transition-none motion-reduce:group-hover:gap-1.5">
+                        Start learning
+                        <span aria-hidden="true">→</span>
+                      </span>
+                    </a>
+                  </li>
+                );
+              }
+
+              return (
+                <li>
+                  <div
+                    aria-disabled="true"
+                    class="flex h-full cursor-default select-none flex-col rounded-2xl border border-dashed border-apple-border bg-transparent p-8 opacity-50"
+                  >
+                    <div class="mb-4 flex items-center justify-between">
+                      <span class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                        Track
+                      </span>
+                      <span class="rounded-full border border-apple-border px-2.5 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wider text-apple-text-secondary">
+                        Coming soon
+                      </span>
+                    </div>
+                    <h2 class="mb-3 text-2xl font-semibold tracking-tight text-apple-text">
+                      {track.title}
+                    </h2>
+                    <p class="flex-1 text-base leading-relaxed text-apple-text-secondary">
+                      {track.description}
+                    </p>
+                  </div>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
+    </main>
+
+    <footer class="border-t border-apple-border/60 py-10">
+      <div class="mx-auto max-w-6xl px-6 text-center text-sm text-apple-text-secondary">
+        How Computers Work
+      </div>
+    </footer>
+  </body>
+</html>
