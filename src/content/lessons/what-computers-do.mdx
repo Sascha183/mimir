@@ -8,18 +8,24 @@ prerequisites: []
 objectives:
   - "Describe what a computer fundamentally does"
   - "Explain why computers seem 'magical' even though they're simple"
-components: []
+components: ["OperationsCounter"]
 draft: false
 ---
 
-Computers feel mysterious. They play games, recognize faces, hold conversations. It's natural to assume something complicated must be going on inside.
+import OperationsCounter from '../../components/OperationsCounter.tsx';
 
-The truth is the opposite. A computer can do only a handful of very simple things — and it can do only one of them at a time. What makes computers feel powerful is that they do these tiny things hundreds of millions of times per second, one after another.
+Have you ever wondered how the electricity coming out of a wall socket turns into the picture you're looking at right now? Or how a few keystrokes on a keyboard become an email that flies around the planet to land on one specific person's screen?
 
-Everything you'll learn in this module is about those small operations: what they are, how they're built, and how stacking them up produces a working machine. You'll start with a single electrical switch and work your way up to a CPU that can run a program.
+Most of us never ask. We use these things every day, and that's fine — you don't need to understand a car to drive one. But the answers turn out to be more elegant, and far more reachable, than they look from the outside. This site is the explanation, starting from the very bottom.
 
-## What this isn't
+The truth is, a computer can do only a handful of very simple things — and it can do only one of them at a time.
 
-This is not a course on programming, on using a particular operating system, or on the history of computing. It's about the physical machine: what's inside the box and how it actually works.
+Below is a small interactive demo. Each dot in the grid represents one tiny operation a computer might perform — adding two numbers, comparing two values, moving a piece of data from one place to another. The grid holds a thousand dots. When the grid fills up, that's a thousand operations.
 
-Ready? The next lesson introduces the NAND gate — the single building block that everything else is made from.
+Start with the slowest speed — one operation per second — and just watch. After a few seconds, only a handful of dots are filled. That's how slow "one per second" really is. Then click "1,000 per second" and watch the grid fill in real time. Then click "one million per second" and pay attention to how quickly the time counter jumps from seconds to days to centuries. That's the speed your phone is running at, right now.
+
+<OperationsCounter client:load />
+
+If you watched the millions-per-second view for even ten seconds, you watched ten million tiny operations happen. A CPU in your phone does about a billion per second, every second, for as long as it's on. That's the trick. Not magic — just speed.
+
+Ready? The next lesson is about bits — the smallest piece of information a computer can hold, and the thing all those operations are operating on.

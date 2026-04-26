@@ -1,0 +1,42 @@
+---
+title: "Bits — The Atoms of Information"
+track: "it-basics"
+module: "hardware-basics"
+order: 2
+duration: 6
+prerequisites: ["what-computers-do"]
+objectives:
+  - "Understand what a bit is and why everything in a computer ultimately reduces to bits"
+  - "Recognize the equivalence: on/off, true/false, 1/0, high voltage / low voltage"
+  - "See how multiple bits combine to represent more than just two things"
+components: ["BitEncoder"]
+draft: false
+---
+
+import BitEncoder from '../../components/BitEncoder.tsx';
+
+Imagine the only way you could communicate with someone across the planet was by switching a single light bulb on and off. They watch your bulb through a telescope. You can't speak, you can't write, you can't gesture. Just on. Off. On. Off. How much could you actually say to each other?
+
+Not much, at first glance. But this is exactly the situation a computer is in. A computer cannot speak. It cannot reason. It cannot understand. All it can do is what you can do with that single bulb: switch tiny electrical signals between two states. On or off. High or low. 1 or 0.
+
+That single switch — the smallest possible piece of information, the answer to a single yes-or-no question — has a name. It's called a **bit**. Every computer that has ever existed, every photo, every email, every video game, every conversation with an AI, is built out of bits and nothing else.
+
+Bits get written different ways depending on context. Engineers say *1* and *0*. Programmers sometimes say *true* and *false*. Hardware people say *high voltage* and *low voltage*. They all mean the same thing. From now on I'll mostly use 1 and 0.
+
+## One bit isn't enough
+
+So a bit can hold one of two values. That's good — it's a starting point. But it's also a problem. Two values isn't enough to do anything interesting. With one bit I can answer *yes* or *no*. I can't write a single letter. I can't represent a color. I can't even count to three.
+
+The way out is the most important idea in computing, and it's so simple it sounds like a trick: use more bits. If one bit gives me two possible values, what about two bits? Four. Three bits? Eight. Four bits? Sixteen. Each bit I add doubles the number of things I can represent. By the time I have eight bits, I've got 256 possibilities. By twenty bits, over a million. By forty bits, over a trillion.
+
+This is hard to feel from numbers alone. Try it instead:
+
+<BitEncoder client:load />
+
+Every time you add a bit, the number of things you can represent doubles. Two bits gets you four combinations. Three gets you eight. Eight gets you 256. Sixteen gets you 65,536. This is exponential growth, and it's the reason a computer can represent almost anything: a few dozen bits is enough to give every grain of sand on Earth its own unique number.
+
+## Bits, all the way down
+
+Everything that follows in this curriculum — every gate you'll build, every memory cell, every CPU instruction, every pixel on a screen, every email, every video — is just bits. Patterns of bits. Operations on bits. Bits flowing through wires, getting flipped, getting compared, getting copied. The whole machine, from the ground floor up, is bits.
+
+So now that I know what a bit is, the next question is — what can a computer actually *do* with bits? Combine them, compare them, change them. The simplest possible operation that takes bits as input and produces a bit as output is called a **logic gate**, and the next lesson introduces the most fundamental one of all.

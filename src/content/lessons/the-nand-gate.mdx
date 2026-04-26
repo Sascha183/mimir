@@ -2,9 +2,9 @@
 title: "The NAND Gate"
 track: "it-basics"
 module: "hardware-basics"
-order: 2
+order: 3
 duration: 7
-prerequisites: ["what-computers-do"]
+prerequisites: ["what-computers-do", "bits"]
 objectives:
   - "Discover the rule a NAND gate follows by reasoning through a thought experiment"
   - "Read a truth table and predict the output for any input combination"
@@ -16,7 +16,11 @@ draft: false
 import NandGate from '../../components/NandGate.tsx';
 import SwitchRoom from '../../components/SwitchRoom.tsx';
 
-The most fundamental part of every computer ever built is hiding in plain sight. We could just tell you what it is and how it works — but it sticks better if you discover it for yourself. So before we name anything, let's walk into a strange room.
+In the last lesson I showed you that everything in a computer is built from bits — single yes/no answers. Now I want to show you what a computer actually does *with* those bits. And to make it concrete, I'm going to start somewhere very physical: a strange room with two light switches.
+
+The most fundamental part of every computer ever built is hiding in plain sight. I could just tell you what it is and how it works — but it sticks better if you discover it for yourself.
+
+Let me tell you a small story. Imagine this:
 
 It's a bright sunny day. The windows are open, light is pouring in, and yet the ceiling lamp is on. That seems like a waste of electricity. You decide to turn it off.
 
@@ -45,7 +49,40 @@ In one sentence: the output is off only when both inputs are on. Otherwise, the 
 
 ## Now in the language of computers
 
-Here's the same idea drawn the way engineers draw it — using **1** for "on" and **0** for "off", and the standard symbol for a NAND gate.
+From now on I'll switch my notation. Instead of writing "on" and "off", I'll write "1" and "0" — the way computer engineers do. They mean exactly the same thing. A switch that's on is a 1. A switch that's off is a 0. The light being on is a 1, and the light being off is a 0. That's it — same idea, shorter to write.
+
+## The symbol
+
+Computer engineers don't draw the full schematic of a NAND gate every time they need one — they'd never finish a single chip. Instead, they use a small standardized symbol that everyone in the field instantly recognizes.
+
+<figure className="not-prose my-8 flex flex-col items-center text-apple-text">
+  <svg
+    viewBox="-32 -20 64 40"
+    width="120"
+    height="75"
+    role="img"
+    aria-labelledby="nand-symbol-title"
+    stroke="currentColor"
+    strokeWidth="1.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    fill="none"
+  >
+    <title id="nand-symbol-title">The NAND gate symbol</title>
+    <path d="M -16 -16 V 16 H 0 A 16 16 0 0 0 0 -16 Z" />
+    <circle cx="19" cy="0" r="3" />
+    <line x1="-28" y1="-10" x2="-16" y2="-10" />
+    <line x1="-28" y1="10" x2="-16" y2="10" />
+    <line x1="22" y1="0" x2="32" y2="0" />
+  </svg>
+  <figcaption className="mt-3 text-sm italic text-apple-text-secondary">
+    The NAND gate symbol.
+  </figcaption>
+</figure>
+
+This is the first of several gate symbols you'll meet. Each kind of gate has its own — a NOT gate gets a triangle, an AND gate gets a D-shape *without* the bubble (the bubble is what makes it "NOT-AND"), an OR gate gets a curved shield. Don't try to memorize them yet — you'll meet each one as you build it. The point right now is just to know that this funny D-shape with a circle on the end means "NAND" to anyone who reads circuit diagrams.
+
+Here's the NAND gate again — same logic as the room, drawn the way real engineers would draw it, and using 1/0 instead of on/off:
 
 <NandGate client:load />
 
