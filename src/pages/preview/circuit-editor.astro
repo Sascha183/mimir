@@ -1,0 +1,85 @@
+---
+import Editor from '../../components/gates/CircuitEditor.tsx';
+import type { Circuit, TruthTable } from '../../lib/gates/types';
+
+// Demo circuit: NAND → NOT chained, which is an AND. Lets us see two gates,
+// three wires, and a target table that's already satisfied — useful for
+// verifying that the "Circuit complete!" indicator wires up correctly.
+const initialCircuit: Circuit = {
+  gates: [
+    { id: 'nand1', kind: 'NAND', position: { x: 240, y: 180 } },
+    { id: 'not1', kind: 'NOT', position: { x: 380, y: 180 } },
+  ],
+  wires: [
+    { id: 'wA', from: { source: 'input', inputId: 'A' }, to: { gateId: 'nand1', port: 'in1' } },
+    { id: 'wB', from: { source: 'input', inputId: 'B' }, to: { gateId: 'nand1', port: 'in2' } },
+    { id: 'wM', from: { gateId: 'nand1', port: 'out' }, to: { gateId: 'not1', port: 'in1' } },
+    { id: 'wY', from: { gateId: 'not1', port: 'out' }, to: { source: 'output', outputId: 'Y' } },
+  ],
+  inputs: [
+    { id: 'A', label: 'A', value: 0 },
+    { id: 'B', label: 'B', value: 0 },
+  ],
+  outputs: [{ id: 'Y', label: 'Y' }],
+};
+
+// Target: AND truth table.
+const targetTruthTable: TruthTable = {
+  inputs: ['A', 'B'],
+  outputs: ['Y'],
+  rows: [
+    { inputValues: [0, 0], outputValues: [0] },
+    { inputValues: [0, 1], outputValues: [0] },
+    { inputValues: [1, 0], outputValues: [0] },
+    { inputValues: [1, 1], outputValues: [1] },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en" class="bg-apple-bg text-apple-text antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>CircuitEditor preview</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen font-sans">
+    <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-base font-semibold tracking-tight text-apple-text">
+          How Computers Work
+        </a>
+        <span class="text-xs text-apple-text-secondary">Preview · CircuitEditor scaffold</span>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 pt-12 pb-24">
+      <h1 class="text-3xl font-semibold tracking-tight">CircuitEditor — scaffold preview</h1>
+      <p class="mt-3 max-w-2xl text-base leading-relaxed text-apple-text-secondary">
+        Chunks 1–2 of the build plan: layout, palette, canvas, sidebar with live and target
+        truth tables, Reset button. No drag-and-drop, port-clicking, or selection yet — those
+        come in chunks 3–7. The starter circuit is NAND → NOT chained (an AND), which already
+        matches the AND target table on the right, so the &ldquo;Circuit complete!&rdquo;
+        indicator shows on load.
+      </p>
+
+      <div class="mt-8">
+        <Editor
+          client:load
+          initialCircuit={initialCircuit}
+          availableGates={["NAND", "NOT", "AND", "OR", "XOR"]}
+          targetTruthTable={targetTruthTable}
+          storageKey="hciw:preview:circuit-editor"
+        />
+      </div>
+    </main>
+
+    <footer class="border-t border-apple-border/60 py-10">
+      <div class="mx-auto max-w-6xl px-6 text-center text-sm text-apple-text-secondary">
+        How Computers Work
+      </div>
+    </footer>
+  </body>
+</html>

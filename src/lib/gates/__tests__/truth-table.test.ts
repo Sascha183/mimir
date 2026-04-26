@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateTruthTable } from '../truth-table';
-import type { Circuit } from '../types';
+import { generateTruthTable, compareTruthTables } from '../truth-table';
+import type { Circuit, TruthTable } from '../types';
 
 describe('generateTruthTable', () => {
   it('produces the NAND truth table for a single NAND gate', () => {
@@ -43,5 +43,81 @@ describe('generateTruthTable', () => {
       { inputValues: [0], outputValues: [1] },
       { inputValues: [1], outputValues: [0] },
     ]);
+  });
+});
+
+describe('compareTruthTables', () => {
+  const andTable: TruthTable = {
+    inputs: ['A', 'B'],
+    outputs: ['Y'],
+    rows: [
+      { inputValues: [0, 0], outputValues: [0] },
+      { inputValues: [0, 1], outputValues: [0] },
+      { inputValues: [1, 0], outputValues: [0] },
+      { inputValues: [1, 1], outputValues: [1] },
+    ],
+  };
+
+  it('returns true for two identical tables', () => {
+    expect(compareTruthTables(andTable, andTable)).toBe(true);
+  });
+
+  it('returns false when an output value differs', () => {
+    const altered: TruthTable = {
+      ...andTable,
+      rows: andTable.rows.map((r, i) =>
+        i === 0 ? { ...r, outputValues: [1] } : r,
+      ),
+    };
+    expect(compareTruthTables(andTable, altered)).toBe(false);
+  });
+
+  it('returns true when row order differs', () => {
+    const reordered: TruthTable = {
+      ...andTable,
+      rows: [
+        { inputValues: [1, 1], outputValues: [1] },
+        { inputValues: [0, 0], outputValues: [0] },
+        { inputValues: [1, 0], outputValues: [0] },
+        { inputValues: [0, 1], outputValues: [0] },
+      ],
+    };
+    expect(compareTruthTables(andTable, reordered)).toBe(true);
+  });
+
+  it('returns true when input column order differs (logical equivalence)', () => {
+    const swapped: TruthTable = {
+      inputs: ['B', 'A'],
+      outputs: ['Y'],
+      rows: [
+        { inputValues: [0, 0], outputValues: [0] }, // B=0, A=0
+        { inputValues: [1, 0], outputValues: [0] }, // B=1, A=0
+        { inputValues: [0, 1], outputValues: [0] }, // B=0, A=1
+        { inputValues: [1, 1], outputValues: [1] }, // B=1, A=1
+      ],
+    };
+    expect(compareTruthTables(andTable, swapped)).toBe(true);
+  });
+
+  it('returns false when input ids differ', () => {
+    const renamed: TruthTable = { ...andTable, inputs: ['X', 'B'] };
+    expect(compareTruthTables(andTable, renamed)).toBe(false);
+  });
+
+  it('returns false when output ids differ', () => {
+    const renamed: TruthTable = { ...andTable, outputs: ['Z'] };
+    expect(compareTruthTables(andTable, renamed)).toBe(false);
+  });
+
+  it('returns false when input/output counts differ', () => {
+    const oneInput: TruthTable = {
+      inputs: ['A'],
+      outputs: ['Y'],
+      rows: [
+        { inputValues: [0], outputValues: [0] },
+        { inputValues: [1], outputValues: [1] },
+      ],
+    };
+    expect(compareTruthTables(andTable, oneInput)).toBe(false);
   });
 });

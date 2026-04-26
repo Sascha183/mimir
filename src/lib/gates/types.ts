@@ -57,3 +57,18 @@ export interface Circuit {
   inputs: CircuitInput[];
   outputs: CircuitOutput[];
 }
+
+/**
+ * Tabular result of running a circuit through every input combination.
+ *
+ * `inputs` and `outputs` list column ids in the order they appear in each
+ * row's `inputValues` / `outputValues`. Row order is canonical (LSB-major)
+ * when produced by `generateTruthTable`, but `compareTruthTables` is
+ * order-insensitive so authored target tables don't have to follow the same
+ * convention.
+ */
+export interface TruthTable {
+  inputs: string[];
+  outputs: string[];
+  rows: { inputValues: Bit[]; outputValues: Bit[] }[];
+}

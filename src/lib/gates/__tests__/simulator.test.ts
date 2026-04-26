@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { simulateCircuit, simulateAll } from '../simulator';
-import type { Circuit } from '../types';
+import { simulateCircuit, simulateAll, wouldCreateCycle } from '../simulator';
+import type { Circuit, Wire } from '../types';
 
 function nandCircuit(): Circuit {
   return {
@@ -124,5 +124,69 @@ describe('simulateAll', () => {
     const r = simulateAll(c, { A: 1, B: 1 });
     expect(r.gateOutputs).toEqual({ nand1: 0, not1: 1 });
     expect(r.outputs).toEqual({ Y: 1 });
+  });
+});
+
+describe('wouldCreateCycle', () => {
+  it('returns false for a wire that does not introduce a cycle', () => {
+    const circuit: Circuit = {
+      gates: [
+        { id: 'g1', kind: 'NAND', position: { x: 0, y: 0 } },
+        { id: 'g2', kind: 'NOT', position: { x: 100, y: 0 } },
+      ],
+      wires: [
+        { id: 'w1', from: { source: 'input', inputId: 'A' }, to: { gateId: 'g1', port: 'in1' } },
+        { id: 'w2', from: { source: 'input', inputId: 'B' }, to: { gateId: 'g1', port: 'in2' } },
+      ],
+      inputs: [
+        { id: 'A', label: 'A', value: 0 },
+        { id: 'B', label: 'B', value: 0 },
+      ],
+      outputs: [{ id: 'Y', label: 'Y' }],
+    };
+    const wire: Wire = {
+      id: 'wNew',
+      from: { gateId: 'g1', port: 'out' },
+      to: { gateId: 'g2', port: 'in1' },
+    };
+    expect(wouldCreateCycle(circuit, wire)).toBe(false);
+  });
+
+  it('returns true for a self-loop (gate output back to its own input)', () => {
+    const circuit: Circuit = {
+      gates: [{ id: 'g1', kind: 'NAND', position: { x: 0, y: 0 } }],
+      wires: [
+        { id: 'w1', from: { source: 'input', inputId: 'A' }, to: { gateId: 'g1', port: 'in1' } },
+      ],
+      inputs: [{ id: 'A', label: 'A', value: 0 }],
+      outputs: [{ id: 'Y', label: 'Y' }],
+    };
+    const wire: Wire = {
+      id: 'wLoop',
+      from: { gateId: 'g1', port: 'out' },
+      to: { gateId: 'g1', port: 'in2' },
+    };
+    expect(wouldCreateCycle(circuit, wire)).toBe(true);
+  });
+
+  it('returns true for a multi-gate feedback cycle', () => {
+    const circuit: Circuit = {
+      gates: [
+        { id: 'g1', kind: 'NAND', position: { x: 0, y: 0 } },
+        { id: 'g2', kind: 'NAND', position: { x: 100, y: 0 } },
+      ],
+      wires: [
+        // g1.out → g2.in1 already exists. The new wire closes the loop g2 → g1.
+        { id: 'w1', from: { gateId: 'g1', port: 'out' }, to: { gateId: 'g2', port: 'in1' } },
+      ],
+      inputs: [{ id: 'A', label: 'A', value: 0 }],
+      outputs: [{ id: 'Y', label: 'Y' }],
+    };
+    const wire: Wire = {
+      id: 'wBack',
+      from: { gateId: 'g2', port: 'out' },
+      to: { gateId: 'g1', port: 'in1' },
+    };
+    expect(wouldCreateCycle(circuit, wire)).toBe(true);
   });
 });

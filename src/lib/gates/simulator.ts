@@ -115,6 +115,33 @@ export function simulateAll(
   return { gateOutputs, outputs };
 }
 
+/**
+ * Returns true if adding `newWire` to `circuit` would introduce a feedback loop.
+ *
+ * Implemented by re-running the simulator on the augmented circuit with all
+ * inputs at 0 and catching the "circular wiring" error. Input values don't
+ * affect cycle topology, so any consistent assignment works.
+ */
+export function wouldCreateCycle(circuit: Circuit, newWire: Wire): boolean {
+  const augmented: Circuit = {
+    gates: circuit.gates,
+    inputs: circuit.inputs,
+    outputs: circuit.outputs,
+    wires: [...circuit.wires, newWire],
+  };
+  const inputValues: Record<string, Bit> = {};
+  for (const input of augmented.inputs) {
+    inputValues[input.id] = 0;
+  }
+  try {
+    simulateAll(augmented, inputValues);
+    return false;
+  } catch (err) {
+    if (err instanceof Error && /circular/i.test(err.message)) return true;
+    throw err;
+  }
+}
+
 function destKey(ref: PortRef): string {
   if ('source' in ref) {
     return ref.source === 'input'
