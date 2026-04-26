@@ -2,7 +2,7 @@
   # ─── Content Security Policy ────────────────────────────────────────────
   # Default-deny everything, then explicitly allow what we need.
   # Adding a new external source requires explicit user approval (see CLAUDE.md).
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
   # ─── Transport security ─────────────────────────────────────────────────
   # Force HTTPS for two years and include subdomains. Submit to the HSTS preload list once you're confident.
@@ -24,8 +24,32 @@
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
 
-# Note on 'unsafe-inline' for styles:
-#   Tailwind compiles to a static stylesheet at build time, so the bulk of CSS is served from 'self'.
-#   'unsafe-inline' is here because Astro injects a small <style> block for component-scoped styles.
-#   If you want to remove it, configure Astro to extract all styles to external files and verify
-#   no third-party MDX usage injects inline styles.
+# Note on 'unsafe-inline':
+#   Both script-src and style-src include 'unsafe-inline'. Two reasons.
+#
+#   Scripts: Astro emits inline <script> blocks to hydrate React island components
+#   (the SwitchRoom, NandGate, CircuitEditor, etc.). Without 'unsafe-inline' in
+#   script-src, every interactive component is blocked at runtime in production.
+#   The alternatives — strict-dynamic with hashes, or per-page nonces injected at
+#   the edge — would require either build-time hash extraction or a non-static
+#   deploy. The site is a fully static Cloudflare Pages build, so neither is
+#   straightforward today.
+#
+#   Styles: Tailwind compiles to a static stylesheet at build time, but Astro
+#   also injects small <style> blocks for component-scoped styles, and a few
+#   widgets (the bulb glow, the bit-encoder grid) set fill/opacity via inline
+#   style attributes that are subject to style-src.
+#
+#   Why this is acceptable for this project, despite 'unsafe-inline' typically
+#   being a red flag:
+#     - No user input is ever rendered into HTML. The site is read-only and
+#       authored content is markdown that goes through React/MDX, not raw
+#       innerHTML, so XSS via injected user content isn't reachable.
+#     - No external scripts are loaded. script-src remains 'self' for all
+#       *external* sources — only inline blocks are permitted.
+#     - The rest of the CSP stays default-deny: no eval, no remote scripts,
+#       no fonts/images from anywhere except the same origin (plus data: URIs
+#       for images).
+#
+#   If/when the site grows to accept user-authored content, revisit this:
+#   move to nonces or strict-dynamic before that lands.
