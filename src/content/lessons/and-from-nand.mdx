@@ -1,0 +1,30 @@
+---
+title: "Building an AND Gate"
+track: "it-basics"
+module: "hardware-basics"
+order: 4
+duration: 7
+prerequisites: ["not-from-nand"]
+objectives:
+  - "Use the circuit editor to build a working circuit from primitive gates"
+  - "Construct an AND gate by combining a NAND and a NOT"
+  - "Recognize that the N in NAND literally means 'NOT AND' — and use that insight"
+components: ["AndFromNandAndNot"]
+draft: false
+---
+
+import AndFromNandAndNot from '../../components/AndFromNandAndNot.tsx';
+
+In the last lesson I gave you the setup. This time, I'm handing you the tools and stepping back — you're going to build the next gate yourself.
+
+Here's the trick. The N at the front of *NAND* is doing all the work. *NAND* literally means *not AND* — it's an AND gate with its output flipped. That's the only thing standing between a NAND and a regular AND.
+
+So if a NAND is just an AND with its output flipped, then to get an AND back, all I'd need to do is flip the NAND's output one more time. And I just spent the last lesson learning how to flip a signal — that's a NOT gate.
+
+The editor below has two inputs (A and B), one output (Y), and a palette with just NAND and NOT. No AND available — you have to build one. Try it.
+
+<AndFromNandAndNot client:load />
+
+Notice what I didn't have to add: a new kind of part. The whole circuit was built from NANDs (one of them, technically) and the NOT I built last lesson — which itself was built from a NAND. So really? Everything you just made is NAND gates wired in clever ways. This will be true for every gate, every register, every memory cell, and every CPU you'll ever see.
+
+Next, you'll build an OR gate. It's slightly trickier, because the symmetry isn't as obvious. But the trick will turn out to be just as elegant.
