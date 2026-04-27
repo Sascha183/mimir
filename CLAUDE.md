@@ -202,6 +202,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 - [x] Lesson 5: Building an AND gate (slug: and-from-nand)
 - [x] Lesson 6: Building an OR gate (slug: or-from-nand) — followed Lesson 5's freeform `CircuitEditor` pattern (target truth table + hint + success block) rather than literal step-gating; matches the established conceptual model.
 - [x] Lesson 7: Building an XOR gate (slug: xor-from-primitives) — palette is AND/OR/NOT (no NAND), forcing composition with gates the learner has built. Same freeform pattern as 5 and 6.
+- [x] Lesson 8: The memory bit (slug: memory-bit) — built as a self-contained `MemoryBit.tsx` (option b from the roadmap). The shared simulator was *not* extended; it still rejects feedback loops, and `CircuitEditor`'s cycle detection remains intact. Latch state machine + click-pulses are encoded directly in the component, reusing only the visual primitives (`GateSymbol`, `Wire`, `Bulb`).
 
 ### Todo
 
@@ -240,7 +241,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 - **Success block text:** "XOR — exclusive OR. It's true when exactly one input is true, false when both are off OR both are on. This is the gate that powers binary addition (the carry-less part), comparison (equal? not equal?), and one-time-pad encryption. It also marks a turning point: from now on, complex circuits are built not from raw NANDs but from compositions of gates you've built. That's how all real chips are designed — bottom-up, layer by layer."
 - **Closing tease:** "So far every gate has been about computation — taking inputs and producing outputs. The next lesson breaks something that has felt like a rule the whole time: every output depends only on the current inputs. What if a gate could remember? That's where things get strange — and that's where computers get their memory."
 
-#### [ ] Lesson 8: The memory bit
+#### [x] Lesson 8: The memory bit (done)
 - **Slug:** memory-bit
 - **Order:** 8
 - **Duration:** 12 minutes

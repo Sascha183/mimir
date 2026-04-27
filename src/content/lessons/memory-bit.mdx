@@ -1,0 +1,44 @@
+---
+title: "The Memory Bit"
+track: "it-basics"
+module: "hardware-basics"
+order: 8
+duration: 12
+prerequisites: ["xor-from-primitives"]
+objectives:
+  - "Understand how feedback turns a stateless gate into a memory cell"
+  - "Recognize the cross-coupled NAND latch as the simplest possible memory"
+  - "See that all computer memory is built from this same idea"
+components: ["MemoryBit"]
+draft: false
+---
+
+import MemoryBit from '../../components/MemoryBit.tsx';
+
+I am going to show you how a computer remembers things. Brace yourself, because the trick is going to feel like cheating.
+
+Every gate you have built so far has had one rigid rule: the output depends only on the current inputs. Flip an input, the output reacts. Flip it back, the output goes back to where it was. There is no past. The gate has no notion of "what happened a moment ago" — only "what is happening right now."
+
+This is a real problem if you want to build a computer. A computer needs to remember things. It needs to know what number is in a register. It needs to hold the pixel you just typed. It needs the contents of an entire web page sitting in RAM. None of that works if every signal vanishes the instant its input goes away.
+
+So we need something new. A circuit whose output depends not just on its current inputs, but on what its inputs used to be.
+
+Here is the trick. Take two NAND gates. Wire each one's output back into the other one's input. Like this — the top NAND's output feeds into the bottom NAND, and the bottom NAND's output feeds back into the top. The two gates are now whispering to each other in a loop.
+
+The two remaining inputs (one on each NAND) we will call **Set** and **Reset**. They are normally held high. When you click Set, the top NAND's input is briefly pulled low. When you click Reset, the bottom NAND's input is briefly pulled low.
+
+That is the whole circuit. Two NANDs and a knot.
+
+<MemoryBit client:load />
+
+Click Set. Q lights up. Now do nothing. Q stays on. Click Reset. Q goes off — and stays off. The buttons are momentary. Each click is a quick pulse, gone in a fraction of a second. And yet the latch holds whatever you last told it. Indefinitely. As long as the circuit has power.
+
+What happened?
+
+Look at the wires while Q is on. The top NAND is outputting 1. That 1 travels back into the bottom NAND, which combined with Reset (held high) gives the bottom NAND inputs of (1, 1) — and a NAND of (1, 1) is 0. So Q-bar is 0. That 0 travels back into the top NAND, which combined with Set (also high) gives the top NAND inputs of (1, 0) — and a NAND with any 0 input is 1. So Q is 1. The state is self-consistent. Each gate is producing exactly what the other gate needs to keep producing what it produces. The loop is stable. The bit is stored.
+
+Click Reset, and you briefly disturb that equilibrium. The bottom NAND's input gets a 0, which forces its output to 1. That 1 travels back to the top NAND, which now sees (1, 1) and outputs 0. That 0 travels to the bottom NAND, which still outputs 1 even after the Reset pulse ends — because the new inputs (0, 1) keep its output at 1. The loop has flipped to a different stable state.
+
+The output did not go away when you released the button. That is because the output is *also* one of the inputs. The gate is, in a real sense, listening to itself. And that is all memory is — at every level, all the way up to your phone's RAM. A signal that loops back into itself.
+
+This is the end of Module 1. You started with a switch and a light. You ended with a circuit that can remember. Everything in a computer — every photo it stores, every webpage it loads, every word in this lesson — is built from billions of these tiny memory cells, plus the gates you built earlier to manipulate them. There is nothing else. There never was anything else.
