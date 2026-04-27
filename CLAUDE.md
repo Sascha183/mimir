@@ -37,6 +37,8 @@ These are the rules that protect the project's security and educational mission.
 1. **No backend services.** No Node servers, no API routes, no edge functions, no databases. If a feature seems to need one, stop and propose client-side alternatives (localStorage, IndexedDB, in-memory state). Do not silently add a backend.
 2. **No user data collection.** No accounts, no analytics that track individuals, no third-party tracking pixels, no cookies that aren't strictly functional.
 3. **Maintain the Content Security Policy** in `public/_headers`. Adding a new external script source, font source, or image source requires explicit user approval. Default-deny everything else.
+
+   *Current state:* the CSP allows `'unsafe-inline'` for both styles AND scripts. This is required for Astro's hydration scripts to execute. It is acceptable because the site renders no user-controlled content, loads no third-party scripts, and the rest of the CSP (`default-src 'none'`, `frame-ancestors 'none'`, etc.) remains strict. If the site ever starts rendering user-supplied content (comments, profile fields, etc.), the CSP needs to be revisited and likely tightened with nonces.
 4. **No inline scripts or `eval`-family functions.** No `eval()`, no `new Function()`, no `dangerouslySetInnerHTML`, no `innerHTML =` assignments with anything that could contain user input. The CSP forbids inline scripts at runtime — your code must work without them.
 5. **No new dependencies without justification.** Before adding any npm package: check it's actively maintained (commit in last 12 months), has >100k weekly downloads OR is a well-known reference implementation, and has no open critical CVEs. Prefer writing 50 lines of code over adding a 5MB package.
 6. **Subresource Integrity for any external asset.** If a font or script must come from a CDN (avoid this), include the `integrity` attribute.
@@ -169,6 +171,114 @@ npm run test             # run component tests
 npm run lint             # eslint
 npm audit                # check for known vulnerabilities — run before every deploy
 ```
+
+---
+
+## Future architecture
+
+The site is currently a fully static deployment with no backend, no database, and no user accounts. Lesson progress is stored in localStorage per browser. This is intentional and matches the current scope.
+
+When user-facing features are eventually added, they should follow this preference order:
+- Bug reports / contact: external service (Formspree, Tally) — no backend needed
+- Comments: external embed (giscus via iframe) — isolated from main site
+- Newsletter: external service (Buttondown, Resend)
+- User accounts + subscriptions: would require migration to a hybrid architecture (Cloudflare Workers for backend, Supabase or similar for DB, Clerk or Auth0 for auth, Paddle or Stripe for payments). This is a 6+ week project and should not be undertaken until there is real user demand justifying it.
+
+Until that migration happens, do not propose adding a backend, database, authentication, or payments. Instead, identify whether an external service can solve the same problem.
+
+---
+
+## Curriculum roadmap — IT Basics, Module 1: Hardware fundamentals
+
+This roadmap defines the remaining lessons in the hardware module. Lessons should be built strictly in order. Each lesson follows the established patterns (GuidedBuilder for guided construction, MDX with first-person singular voice, embedded interactive component, prev/next navigation handled automatically by the lesson layout).
+
+Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
+
+### Done
+- [x] Lesson 1: What computers actually do (slug: what-computers-do)
+- [x] Lesson 2: Bits — atoms of information (slug: bits)
+- [x] Lesson 3: The NAND gate (slug: the-nand-gate)
+- [x] Lesson 4: Building a NOT gate (slug: not-from-nand)
+- [x] Lesson 5: Building an AND gate (slug: and-from-nand)
+
+### Todo
+
+#### [ ] Lesson 6: Building an OR gate
+- **Slug:** or-from-nand
+- **Order:** 6
+- **Duration:** 7 minutes
+- **Prerequisites:** ["and-from-nand"]
+- **Pattern:** GuidedBuilder, modeled closely on Lesson 5 (and-from-nand)
+- **The pedagogical insight:** OR can be built by inverting both inputs of a NAND. So: NOT(A) and NOT(B) feed into a NAND. The result is OR. (This is De Morgan's law applied — but DO NOT name it that. The point is for the learner to feel the elegance, not to memorize a theorem.)
+- **Step sequence (5 steps):**
+  1. **Observe:** A pre-placed NAND with both inputs wired to A and B. Instruction: "Here's the same NAND from before. Toggle the switches and remind yourself how it behaves. We're going to use this — but flipped."
+  2. **Add NOT to A's path:** Allow learner to drag a NOT gate. Instruction: "Drag a NOT gate onto the canvas. We're going to flip input A before it reaches the NAND."
+  3. **Wire A through the NOT:** Constrain wires so the only valid action is rewiring A → NOT_1.in, then NOT_1.out → NAND.in1. Instruction: "Disconnect A from the NAND. Then route A through the NOT, and the NOT into the NAND's first input." (The wire-deletion has to be allowed in this step — adjust GuidedBuilder if needed to support `deleteWires` selectively.)
+  4. **Repeat for B:** Same as step 2-3 but for B. Instruction: "Now do the same for B. Add another NOT and route B through it into the NAND's second input."
+  5. **Verify:** Instruction: "Look at the truth table. Y is on whenever A or B (or both) are on — that's an OR gate. You just built it by inverting both inputs of a NAND."
+- **Hint** (revealed via "Stuck?" button in Step 3): "Remember the symmetry — the NOT bubble is the visual sign of inversion. If I invert *both* inputs going into a NAND, I get the opposite behavior."
+- **Success block text:** "You just built an OR gate. The trick was symmetry: NAND is 'NOT (A AND B)' — and OR turns out to be 'NOT(A) NAND NOT(B)'. The two operations are mirror images of each other. This deep relationship between AND and OR (with inversion sprinkled in) shows up everywhere in computing — from logic to programming to math. You'll see it again."
+- **Closing tease:** "Next: XOR. The trickiest of the standard gates, and the most useful for what comes after — addition, comparison, encryption. It's the first gate that needs more than one or two NANDs to build."
+
+#### [ ] Lesson 7: Building an XOR gate
+- **Slug:** xor-from-primitives
+- **Order:** 7
+- **Duration:** 10 minutes (longer — this is genuinely complex)
+- **Prerequisites:** ["or-from-nand"]
+- **Pattern:** GuidedBuilder, but with more freedom. Allow the learner to use AND, OR, and NOT as primitives (NOT just NAND). Pedagogically, this is where we shift from "everything is NAND" to "we can compose at higher levels." This earns the learner: by lesson 7 they've built AND, OR, NOT themselves, so it's fair to use them as building blocks.
+- **The pedagogical insight:** XOR is "exactly one of the two inputs is on" — it's the OR but excluding the case where both are on. So: XOR = (A OR B) AND NOT(A AND B). Five gates total: 1 OR, 1 AND, 1 NAND (or NOT after AND), wired into a final AND.
+- **Available gates in palette:** ["AND", "OR", "NOT"] — note: not NAND. Force the learner to think in terms of the gates they've built, not the primitive.
+- **Step sequence (5 steps):**
+  1. **Discuss the problem:** No interactivity yet — just a long instruction explaining what XOR is and why it matters (parity, addition, equality checking). Frame it as a puzzle: "How would you build a gate that turns on only when exactly one input is on?"
+  2. **Build the OR half:** Add an OR, wire A and B to it. Instruction: "Start with what you know: an OR gate is on when at least one input is on. That's almost what we want — except we don't want it on when BOTH are on."
+  3. **Build the AND half:** Add an AND, also wire A and B to it. Instruction: "Now add an AND. This will tell us when BOTH inputs are on — exactly the case we want to exclude."
+  4. **Invert the AND:** Add a NOT after the AND. Instruction: "Add a NOT to flip the AND's output. Now we have a signal that's on UNLESS both inputs are on."
+  5. **Combine:** Add a final AND that takes (OR output) and (NOT-AND output) as inputs, wires to Y. Instruction: "The last step: combine your two signals. Y should be on only if (at least one input is on) AND (it's not the case that both are on). That's XOR."
+- **Hint after Step 5 if stuck:** "Think of it as two conditions that both need to be true: 'at least one is on' AND 'they're not both on'. Each condition is one of the signals you built."
+- **Success block text:** "XOR — exclusive OR. It's true when exactly one input is true, false when both are off OR both are on. This is the gate that powers binary addition (the carry-less part), comparison (equal? not equal?), and one-time-pad encryption. It also marks a turning point: from now on, complex circuits are built not from raw NANDs but from compositions of gates you've built. That's how all real chips are designed — bottom-up, layer by layer."
+- **Closing tease:** "So far every gate has been about computation — taking inputs and producing outputs. The next lesson breaks something that has felt like a rule the whole time: every output depends only on the current inputs. What if a gate could remember? That's where things get strange — and that's where computers get their memory."
+
+#### [ ] Lesson 8: The memory bit
+- **Slug:** memory-bit
+- **Order:** 8
+- **Duration:** 12 minutes
+- **Prerequisites:** ["xor-from-primitives"]
+- **Pattern:** This lesson likely needs custom work, NOT just GuidedBuilder. Reason: feedback loops. Every previous lesson assumed acyclic circuits — but a memory bit REQUIRES a loop (the gate's output feeds back into its own input chain). The simulator may need adjustment to handle this correctly.
+- **CRITICAL:** Before building this lesson, check whether the simulator (src/lib/gates/simulator.ts) handles feedback loops. If it currently throws "circular wiring detected", we need to either (a) extend the simulator with stable-state computation for feedback circuits, or (b) build a custom mini-simulator just for this lesson that does timed/clocked evaluation. Do NOT silently break the cycle detection — it's there for a reason in regular circuits.
+- **The pedagogical insight:** Two NAND gates wired in a cross-coupled feedback loop form a "set-reset latch" — the simplest possible memory. When you "set" it (briefly pulse one input), the latch holds the new state until you "reset" it. This is genuinely mind-blowing because:
+  1. The same NAND that did pure computation can ALSO hold state
+  2. State emerges from feedback, not from any new physical mechanism
+  3. This is how ALL computer memory works, all the way up to RAM
+- **Suggested approach:**
+  - Use a custom interactive component (NOT GuidedBuilder) showing a fixed cross-coupled NAND latch
+  - Two input switches: "Set" and "Reset" (momentary buttons, not toggles — they spring back)
+  - Two output bulbs: Q and Q-bar (always opposite)
+  - When learner presses Set: Q goes on, stays on after release
+  - When learner presses Reset: Q goes off, stays off after release
+  - When both inputs are at rest: state is preserved
+  - The "magic" is that the gate REMEMBERS — pressing nothing keeps the state
+- **Lesson body should:**
+  - Open with the audacity of the claim: "I'm going to show you how a computer remembers things. Brace yourself, because the trick is going to feel like cheating."
+  - Explain that until now, every gate's output depended only on its current inputs. Memory needs something more — a way for the past to influence the present.
+  - Introduce the cross-coupled NAND configuration. Show it visually before the interactive widget. The wiring is genuinely unusual and benefits from being seen first.
+  - Embed the widget. Explicitly invite the learner to: press Set, release, observe; press Reset, release, observe; do nothing and observe.
+  - The reveal: "The output didn't go away when you released the button. That's because the output is also one of the inputs. The gate is, in a real sense, listening to itself. And that's all memory is — at every level, all the way up to your phone's RAM. A signal that loops back into itself."
+  - Closing reflection: "This is the end of Module 1. You started with a switch and a light. You ended with a circuit that can remember. Everything in a computer — every photo it stores, every webpage it loads, every word in this lesson — is built from billions of these tiny memory cells, plus the gates you built earlier to manipulate them. There's nothing else. There never was anything else."
+- **Closing tease (optional, if Module 2 is planned):** "Module 2: from a single memory bit to bytes, registers, and the memory grid. We're going to scale this up."
+
+### Working agreements for autonomous lesson building
+
+When working through these lessons in sequence, follow these rules:
+- **Build in order.** Don't skip ahead, even if a later lesson seems easier.
+- **Test in browser after each lesson.** Run `npm run dev`, navigate to the lesson, click through it manually. If something is visually broken or interactively broken, fix it before moving on.
+- **Commit after each completed lesson.** Use clear messages like "lesson 6: OR gate via guided builder".
+- **Update this roadmap.** When a lesson is done, change `[ ]` to `[x]` and append a one-line note about anything notable.
+- **Stop and ask for human input only when:**
+  - A pedagogical decision is genuinely ambiguous (e.g., "should this be guided or freeform?")
+  - The simulator or library needs a non-trivial extension (especially for Lesson 8's feedback loops)
+  - A test fails in a way that suggests a real bug, not just a flaky test
+  - The build breaks and the cause is unclear after one attempt to fix
+- **Don't ask for human input on:** styling tweaks, prose phrasing, hint wording, color choices, layout decisions. Make a reasonable choice and move on. The human will polish during review.
 
 ---
 
