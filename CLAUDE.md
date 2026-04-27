@@ -201,10 +201,11 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 - [x] Lesson 4: Building a NOT gate (slug: not-from-nand)
 - [x] Lesson 5: Building an AND gate (slug: and-from-nand)
 - [x] Lesson 6: Building an OR gate (slug: or-from-nand) — followed Lesson 5's freeform `CircuitEditor` pattern (target truth table + hint + success block) rather than literal step-gating; matches the established conceptual model.
+- [x] Lesson 7: Building an XOR gate (slug: xor-from-primitives) — palette is AND/OR/NOT (no NAND), forcing composition with gates the learner has built. Same freeform pattern as 5 and 6.
 
 ### Todo
 
-#### [x] Lesson 6: Building an OR gate
+#### [x] Lesson 6: Building an OR gate (done)
 - **Slug:** or-from-nand
 - **Order:** 6
 - **Duration:** 7 minutes
@@ -221,7 +222,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 - **Success block text:** "You just built an OR gate. The trick was symmetry: NAND is 'NOT (A AND B)' — and OR turns out to be 'NOT(A) NAND NOT(B)'. The two operations are mirror images of each other. This deep relationship between AND and OR (with inversion sprinkled in) shows up everywhere in computing — from logic to programming to math. You'll see it again."
 - **Closing tease:** "Next: XOR. The trickiest of the standard gates, and the most useful for what comes after — addition, comparison, encryption. It's the first gate that needs more than one or two NANDs to build."
 
-#### [ ] Lesson 7: Building an XOR gate
+#### [x] Lesson 7: Building an XOR gate (done)
 - **Slug:** xor-from-primitives
 - **Order:** 7
 - **Duration:** 10 minutes (longer — this is genuinely complex)

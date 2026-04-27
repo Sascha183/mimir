@@ -1,0 +1,38 @@
+---
+title: "Building an XOR Gate"
+track: "it-basics"
+module: "hardware-basics"
+order: 7
+duration: 10
+prerequisites: ["or-from-nand"]
+objectives:
+  - "Compose AND, OR, and NOT into a working XOR gate"
+  - "Recognize that complex circuits are built layer by layer from simpler ones"
+  - "Understand why XOR matters: addition, comparison, encryption"
+components: ["XorFromPrimitives"]
+draft: false
+---
+
+import XorFromPrimitives from '../../components/XorFromPrimitives.tsx';
+
+You have built four gates so far: NAND (given), NOT, AND, OR. Each was a small twist on the one before. This one is going to take a bit more thought.
+
+The gate is XOR — *exclusive* OR. It is on when exactly one of its inputs is on. If both are off, it stays off. If both are on, it also stays off. Only when one is on and the other is off does it light up.
+
+Why does anyone care about this? Three reasons. XOR is the carry-less heart of binary addition: when I add two bits, the low-order bit of the result is just A XOR B. XOR is the cleanest way to ask "are these two signals different?" — useful for comparison and equality checks. And XORing a message with a random key gives you a one-time pad, the only encryption scheme that is mathematically impossible to break (when used correctly). From small chip up to global cryptography, XOR is everywhere.
+
+So how do I build it from what I already have?
+
+Here is the puzzle. I want Y to be on when "at least one input is on" *and also* "the inputs are not both on". Two conditions that both must be true.
+
+The first condition — at least one is on — that is just OR. I have OR.
+
+The second condition — they are not both on — is the negation of "both are on". And "both are on" is just AND. So I want NOT(AND). I have NOT, and I have AND.
+
+If I build both of those signals separately and then combine them with a final AND, I get a gate that is on only when both conditions hold. That is XOR.
+
+The palette has AND, OR, and NOT. Notice what is missing: NAND. From this lesson onward, you compose with gates you have built yourself, not with the raw primitive. This earns you a kind of license — the underlying NANDs are still there, hidden inside each AND, OR, and NOT, but you do not have to think about them anymore. This is exactly how real chip design works: each layer builds on the one below, and once a layer is solid you stop reasoning about the layer beneath it.
+
+<XorFromPrimitives client:load />
+
+So far every gate has been about computation — taking inputs and producing outputs. The next lesson breaks something that has felt like a rule the whole time: every output depends only on the current inputs. What if a gate could remember? That is where things get strange — and that is where computers get their memory.
