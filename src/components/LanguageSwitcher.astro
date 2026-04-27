@@ -1,0 +1,58 @@
+---
+import { LOCALES, switchLocalePath, t, type Locale } from '../i18n';
+
+interface Props {
+  currentLocale: Locale;
+  currentPath: string;
+}
+
+const { currentLocale, currentPath } = Astro.props as Props;
+---
+
+<div
+  class="flex items-center gap-2 text-sm"
+  role="group"
+  aria-label={t('languageSwitcher.ariaLabel', currentLocale)}
+>
+  {
+    LOCALES.map((loc, idx) => {
+      const isActive = loc === currentLocale;
+      const href = switchLocalePath(currentPath, loc);
+      const label = t(`languageSwitcher.${loc}`, currentLocale);
+      return (
+        <>
+          {idx > 0 && (
+            <span aria-hidden="true" class="text-apple-border">
+              |
+            </span>
+          )}
+          <a
+            href={href}
+            data-lang-switch={loc}
+            aria-current={isActive ? 'true' : undefined}
+            class:list={[
+              'transition-colors duration-300 hover:underline motion-reduce:transition-none',
+              isActive ? 'font-medium text-apple-text' : 'text-apple-text-secondary hover:text-apple-text',
+            ]}
+          >
+            {label}
+          </a>
+        </>
+      );
+    })
+  }
+</div>
+
+<script>
+  // Persist the user's explicit choice. The homepage's redirect script consults
+  // this cookie before doing any browser-language detection, so once a visitor
+  // has clicked the switcher we never auto-redirect them again.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-lang-switch]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const lang = link.dataset.langSwitch;
+      if (lang === 'en' || lang === 'de') {
+        document.cookie = `hciw-lang=${lang}; path=/; max-age=31536000; samesite=lax`;
+      }
+    });
+  });
+</script>

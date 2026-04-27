@@ -8,6 +8,16 @@ import tailwind from '@astrojs/tailwind';
 export default defineConfig({
   site: 'https://howcomputerswork.example.com', // change to your real domain before deploy
   output: 'static',
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'de'],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+    fallback: {
+      de: 'en',
+    },
+  },
   integrations: [
     react(),
     mdx(),

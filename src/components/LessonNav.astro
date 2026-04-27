@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { localizedLessonHref, stripLocaleSlug, t, type Locale } from '../i18n';
 
 type Lesson = CollectionEntry<'lessons'>;
 
@@ -7,12 +8,14 @@ interface Props {
   moduleOrder: { key: string; firstOrder: number; items: Lesson[] }[];
   currentSlug: string;
   moduleLabels: Record<string, string>;
+  locale: Locale;
 }
 
-const { moduleOrder, currentSlug, moduleLabels } = Astro.props as Props;
+const { moduleOrder, currentSlug, moduleLabels, locale } = Astro.props as Props;
+const currentRawSlug = stripLocaleSlug(currentSlug);
 ---
 
-<nav aria-label="Lessons in this track" class="space-y-6">
+<nav aria-label={t('lesson.lessonsAriaLabel', locale)} class="space-y-6">
   {
     moduleOrder.map(({ key, items }) => (
       <div>
@@ -23,11 +26,12 @@ const { moduleOrder, currentSlug, moduleLabels } = Astro.props as Props;
         )}
         <ol class="space-y-1">
           {items.map((lesson) => {
-            const isCurrent = lesson.slug === currentSlug;
+            const rawSlug = stripLocaleSlug(lesson.slug);
+            const isCurrent = rawSlug === currentRawSlug;
             return (
               <li>
                 <a
-                  href={`/lessons/${lesson.slug}`}
+                  href={localizedLessonHref(rawSlug, locale)}
                   aria-current={isCurrent ? 'page' : undefined}
                   class:list={[
                     'block rounded-md px-3 py-2 text-sm leading-snug transition-colors duration-300 motion-reduce:transition-none',

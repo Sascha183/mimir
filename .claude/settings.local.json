@@ -13,7 +13,17 @@
       "Bash(grep -oE 'aria-current=\"page\"[^>]*>[^<]{0,60}' lessons/the-nand-gate/index.html)",
       "Bash(npx vitest *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git mv *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://localhost:4321/)",
+      "Bash(curl -s http://localhost:4321/de/)",
+      "Bash(curl -s http://localhost:4321/about)",
+      "Bash(curl -s http://localhost:4321/de/about)",
+      "Bash(curl -s http://localhost:4321/tracks/it-basics)",
+      "Bash(curl -s http://localhost:4321/de/tracks/it-basics)",
+      "Bash(curl -s http://localhost:4321/de/lessons/the-nand-gate)",
+      "Bash(curl -s http://localhost:4321/lessons/the-nand-gate)"
     ]
   }
 }

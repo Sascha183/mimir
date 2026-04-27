@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "Wie Computer funktionieren",
+    "about": "Über"
+  },
+  "hero": {
+    "title": "TODO: Übersetzen",
+    "subtitle": "TODO: Übersetzen"
+  },
+  "track": {
+    "label": "Lernpfad",
+    "lessonCountSingular": "Lektion",
+    "lessonCountPlural": "Lektionen",
+    "startLearning": "Loslegen",
+    "comingSoon": "Bald verfügbar",
+    "itBasics": {
+      "title": "IT-Grundlagen",
+      "description": "TODO: Übersetzen"
+    },
+    "ai": {
+      "title": "Künstliche Intelligenz",
+      "description": "TODO: Übersetzen"
+    },
+    "programming": {
+      "title": "Programmierung",
+      "description": "TODO: Übersetzen"
+    }
+  },
+  "trackPage": {
+    "allTracks": "Alle Lernpfade",
+    "moduleHardwareBasics": "Hardware-Grundlagen",
+    "moduleGeneral": "Lektionen",
+    "minutesShort": "Min."
+  },
+  "lesson": {
+    "duration": "Min. Lesezeit",
+    "objectives": "Am Ende dieser Lektion kannst du",
+    "lessonNumber": "Lektion",
+    "previous": "← Zurück",
+    "next": "Weiter →",
+    "back": "← Zurück",
+    "finish": "Fertig →",
+    "trackOverview": "Übersicht: {track}",
+    "backToTrack": "Zurück zu {track}",
+    "lessonsInTrack": "Lektionen in {track}",
+    "onThisPage": "Auf dieser Seite",
+    "lessonsAriaLabel": "Lektionen in diesem Lernpfad",
+    "lessonNavAriaLabel": "Lektionsnavigation"
+  },
+  "about": {
+    "title": "Über — Wie Computer funktionieren",
+    "metaDescription": "TODO: Übersetzen",
+    "startWithItBasics": "Mit IT-Grundlagen beginnen →",
+    "backToHome": "Zurück zur Startseite"
+  },
+  "siteDescription": "TODO: Übersetzen",
+  "footer": {
+    "text": "Wie Computer funktionieren"
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Sprache wechseln",
+    "en": "EN",
+    "de": "DE"
+  }
+}

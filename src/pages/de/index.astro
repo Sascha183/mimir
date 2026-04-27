@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
 import {
   filterLessonsByLocale,
   localizedAboutHref,
@@ -8,9 +8,9 @@ import {
   localizedTrackHref,
   t,
   type Locale,
-} from '../i18n';
+} from '../../i18n';
 
-const locale: Locale = 'en';
+const locale: Locale = 'de';
 
 const allLessons = await getCollection('lessons', ({ data }) => !data.draft);
 const lessons = filterLessonsByLocale(allLessons, locale);
@@ -37,29 +37,6 @@ const tracks: { slug: TrackSlug; titleKey: string; descriptionKey: string }[] = 
     <meta name="description" content={t('siteDescription', locale)} />
     <title>{t('nav.home', locale)}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <script>
-      // Browser-language redirect — only on the literal root path, only on first visit.
-      // Once the user explicitly picks a language via the switcher (which sets `hciw-lang`),
-      // we never auto-redirect again. With output: 'static' we cannot do this in a middleware,
-      // so the check runs client-side; the brief flash of English on first visit is the
-      // tradeoff for keeping the deploy fully static.
-      (function () {
-        try {
-          if (window.location.pathname !== '/') return;
-          const cookie = document.cookie.split('; ').find((c) => c.startsWith('hciw-lang='));
-          if (cookie) return; // user has already chosen
-          const langs = (navigator.languages && navigator.languages.length
-            ? navigator.languages
-            : [navigator.language || '']);
-          const prefersGerman = langs.some((l) => typeof l === 'string' && l.toLowerCase().startsWith('de'));
-          if (prefersGerman) {
-            window.location.replace('/de/');
-          }
-        } catch (_) {
-          /* navigation only — silent fallback */
-        }
-      })();
-    </script>
   </head>
   <body class="min-h-screen font-sans">
     <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">

@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "home": "How Computers Work",
+    "about": "About"
+  },
+  "hero": {
+    "title": "Learn how technology actually works.",
+    "subtitle": "Three tracks that build from the ground up. No prior experience required — just curiosity about what's inside the machine."
+  },
+  "track": {
+    "label": "Track",
+    "lessonCountSingular": "lesson",
+    "lessonCountPlural": "lessons",
+    "startLearning": "Start learning",
+    "comingSoon": "Coming soon",
+    "itBasics": {
+      "title": "IT Basics",
+      "description": "How computers actually work, from a single NAND gate up through a working CPU and the operating system that runs on it."
+    },
+    "ai": {
+      "title": "Artificial Intelligence",
+      "description": "What modern AI systems are doing under the hood — from a single neuron up through the models powering today's tools."
+    },
+    "programming": {
+      "title": "Programming",
+      "description": "Writing software: how to express ideas as code, structure a program, and debug what you build."
+    }
+  },
+  "trackPage": {
+    "allTracks": "All tracks",
+    "moduleHardwareBasics": "Hardware Basics",
+    "moduleGeneral": "Lessons",
+    "minutesShort": "min"
+  },
+  "lesson": {
+    "duration": "min read",
+    "objectives": "By the end of this lesson",
+    "lessonNumber": "Lesson",
+    "previous": "← Previous",
+    "next": "Next →",
+    "back": "← Back",
+    "finish": "Finish →",
+    "trackOverview": "{track} overview",
+    "backToTrack": "Back to {track}",
+    "lessonsInTrack": "Lessons in {track}",
+    "onThisPage": "On this page",
+    "lessonsAriaLabel": "Lessons in this track",
+    "lessonNavAriaLabel": "Lesson navigation"
+  },
+  "about": {
+    "title": "About — How Computers Work",
+    "metaDescription": "Why this site exists, and what it's trying to do.",
+    "startWithItBasics": "Start with IT Basics →",
+    "backToHome": "Back to home"
+  },
+  "siteDescription": "Learn how technology actually works — hardware, AI, and programming, from first principles.",
+  "footer": {
+    "text": "How Computers Work"
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Switch language",
+    "en": "EN",
+    "de": "DE"
+  }
+}

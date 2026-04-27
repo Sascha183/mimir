@@ -2,6 +2,16 @@
 import type { CollectionEntry } from 'astro:content';
 import type { MarkdownHeading } from 'astro';
 import LessonNav from '../components/LessonNav.astro';
+import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import {
+  localizedAboutHref,
+  localizedLessonHref,
+  localizedRootHref,
+  localizedTrackHref,
+  stripLocaleSlug,
+  t,
+  type Locale,
+} from '../i18n';
 
 type Lesson = CollectionEntry<'lessons'>;
 
@@ -11,19 +21,20 @@ interface Props {
   prev: Lesson | null;
   next: Lesson | null;
   headings: MarkdownHeading[];
+  locale: Locale;
 }
 
-const { lesson, siblings, prev, next, headings } = Astro.props as Props;
+const { lesson, siblings, prev, next, headings, locale } = Astro.props as Props;
 const { title, duration, objectives, track, module: moduleName, order } = lesson.data;
 
-const trackLabels: Record<typeof track, string> = {
-  'it-basics': 'IT Basics',
-  'artificial-intelligence': 'Artificial Intelligence',
-  'programming': 'Programming',
-};
+const trackKeyMap = {
+  'it-basics': 'track.itBasics.title',
+  'artificial-intelligence': 'track.ai.title',
+  'programming': 'track.programming.title',
+} as const;
 
-const trackHref = `/tracks/${track}`;
-const trackLabel = trackLabels[track];
+const trackLabel = t(trackKeyMap[track], locale);
+const trackHref = localizedTrackHref(track, locale);
 
 // Group sibling lessons by module for the sidebar — same approach as the track page.
 const grouped = siblings.reduce<Record<string, Lesson[]>>((acc, l) => {
@@ -36,28 +47,35 @@ const moduleOrder = Object.entries(grouped)
   .sort((a, b) => a.firstOrder - b.firstOrder);
 
 const moduleLabels: Record<string, string> = {
-  'hardware-basics': 'Hardware Basics',
-  '_general': 'Lessons',
+  'hardware-basics': t('trackPage.moduleHardwareBasics', locale),
+  '_general': t('trackPage.moduleGeneral', locale),
 };
 
 // Right-rail outline: H2s only. The rail is omitted entirely when there are none.
 const outline = headings.filter((h) => h.depth === 2);
+
+const siteName = t('nav.home', locale);
+const aboutLabel = t('nav.about', locale);
+const homeHref = localizedRootHref(locale);
+const aboutHref = localizedAboutHref(locale);
+const prevRawSlug = prev ? stripLocaleSlug(prev.slug) : null;
+const nextRawSlug = next ? stripLocaleSlug(next.slug) : null;
 ---
 
 <!doctype html>
-<html lang="en" class="bg-apple-bg text-apple-text antialiased">
+<html lang={locale} class="bg-apple-bg text-apple-text antialiased">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={`Lesson ${order}: ${title}`} />
-    <title>{title} — How Computers Work</title>
+    <meta name="description" content={`${t('lesson.lessonNumber', locale)} ${order}: ${title}`} />
+    <title>{title} — {siteName}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body class="min-h-screen font-sans">
     <header class="sticky top-0 z-20 border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
       <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <a href="/" class="text-base font-semibold tracking-tight text-apple-text">
-          How Computers Work
+        <a href={homeHref} class="text-base font-semibold tracking-tight text-apple-text">
+          {siteName}
         </a>
         <div class="flex items-center gap-6">
           <a
@@ -67,11 +85,12 @@ const outline = headings.filter((h) => h.depth === 2);
             {trackLabel}
           </a>
           <a
-            href="/about"
+            href={aboutHref}
             class="text-sm text-apple-text-secondary transition-colors duration-300 hover:text-apple-text motion-reduce:transition-none"
           >
-            About
+            {aboutLabel}
           </a>
+          <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
         </div>
       </nav>
     </header>
@@ -84,7 +103,7 @@ const outline = headings.filter((h) => h.depth === 2);
       <details class="lesson-nav-mobile mb-8 rounded-xl border border-apple-border bg-white md:hidden">
         <summary class="cursor-pointer px-5 py-4 text-sm font-medium text-apple-text">
           <span class="flex items-center justify-between">
-            <span>Lessons in {trackLabel}</span>
+            <span>{t('lesson.lessonsInTrack', locale, { track: trackLabel })}</span>
             <span aria-hidden="true" class="text-apple-text-secondary">▾</span>
           </span>
         </summary>
@@ -93,6 +112,7 @@ const outline = headings.filter((h) => h.depth === 2);
             moduleOrder={moduleOrder}
             currentSlug={lesson.slug}
             moduleLabels={moduleLabels}
+            locale={locale}
           />
         </div>
       </details>
@@ -108,6 +128,7 @@ const outline = headings.filter((h) => h.depth === 2);
               moduleOrder={moduleOrder}
               currentSlug={lesson.slug}
               moduleLabels={moduleLabels}
+              locale={locale}
             />
           </div>
         </aside>
@@ -115,9 +136,9 @@ const outline = headings.filter((h) => h.depth === 2);
         <!-- CENTER: lesson content -->
         <article class="min-w-0">
           <p class="mb-4 text-sm text-apple-text-secondary">
-            {moduleName ? `${moduleLabels[moduleName] ?? moduleName} · Lesson ${order}` : `Lesson ${order}`}
+            {moduleName ? `${moduleLabels[moduleName] ?? moduleName} · ${t('lesson.lessonNumber', locale)} ${order}` : `${t('lesson.lessonNumber', locale)} ${order}`}
             <span class="mx-2 text-apple-border">·</span>
-            {duration} min read
+            {duration} {t('lesson.duration', locale)}
           </p>
           <h1 class="mb-10 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
             {title}
@@ -125,7 +146,7 @@ const outline = headings.filter((h) => h.depth === 2);
 
           <section class="mb-12 border-l-2 border-apple-blue/60 pl-6">
             <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-              By the end of this lesson
+              {t('lesson.objectives', locale)}
             </p>
             <ul class="space-y-1.5 text-base text-apple-text">
               {objectives.map((obj) => <li>{obj}</li>)}
@@ -148,17 +169,17 @@ const outline = headings.filter((h) => h.depth === 2);
 
           <!-- Prev/next nav -->
           <nav
-            aria-label="Lesson navigation"
+            aria-label={t('lesson.lessonNavAriaLabel', locale)}
             class="mt-20 grid gap-4 border-t border-apple-border/70 pt-10 sm:grid-cols-2"
           >
             {
-              prev ? (
+              prev && prevRawSlug ? (
                 <a
-                  href={`/lessons/${prev.slug}`}
+                  href={localizedLessonHref(prevRawSlug, locale)}
                   class="rounded-2xl border border-apple-border bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                    ← Previous
+                    {t('lesson.previous', locale)}
                   </p>
                   <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
                     {prev.data.title}
@@ -170,22 +191,22 @@ const outline = headings.filter((h) => h.depth === 2);
                   class="rounded-2xl border border-apple-border bg-white p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                    ← Back
+                    {t('lesson.back', locale)}
                   </p>
                   <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
-                    {trackLabel} overview
+                    {t('lesson.trackOverview', locale, { track: trackLabel })}
                   </p>
                 </a>
               )
             }
             {
-              next ? (
+              next && nextRawSlug ? (
                 <a
-                  href={`/lessons/${next.slug}`}
+                  href={localizedLessonHref(nextRawSlug, locale)}
                   class="rounded-2xl border border-apple-border bg-white p-6 text-right transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                    Next →
+                    {t('lesson.next', locale)}
                   </p>
                   <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
                     {next.data.title}
@@ -197,10 +218,10 @@ const outline = headings.filter((h) => h.depth === 2);
                   class="rounded-2xl border border-apple-border bg-white p-6 text-right transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   <p class="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                    Finish →
+                    {t('lesson.finish', locale)}
                   </p>
                   <p class="mt-2 text-base font-medium tracking-tight text-apple-text">
-                    Back to {trackLabel}
+                    {t('lesson.backToTrack', locale, { track: trackLabel })}
                   </p>
                 </a>
               )
@@ -214,7 +235,7 @@ const outline = headings.filter((h) => h.depth === 2);
             <aside class="hidden lg:block">
               <div class="sticky top-24">
                 <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                  On this page
+                  {t('lesson.onThisPage', locale)}
                 </p>
                 <ul class="space-y-2 border-l border-apple-border/70 text-sm">
                   {outline.map((h) => (
@@ -237,7 +258,7 @@ const outline = headings.filter((h) => h.depth === 2);
 
     <footer class="border-t border-apple-border/60 py-10">
       <div class="mx-auto max-w-7xl px-6 text-center text-sm text-apple-text-secondary">
-        How Computers Work
+        {t('footer.text', locale)}
       </div>
     </footer>
 

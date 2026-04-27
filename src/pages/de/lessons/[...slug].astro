@@ -1,18 +1,15 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
-import LessonLayout from '../../layouts/LessonLayout.astro';
-import { stripLocaleSlug, type Locale } from '../../i18n';
+import LessonLayout from '../../../layouts/LessonLayout.astro';
+import { stripLocaleSlug, type Locale } from '../../../i18n';
 
 type Lesson = CollectionEntry<'lessons'>;
-const LOCALE: Locale = 'en';
+const LOCALE: Locale = 'de';
 
 export async function getStaticPaths() {
   const all = await getCollection('lessons', ({ data }) => !data.draft);
-  const lessons = all.filter((e) => e.slug.startsWith('en/'));
+  const lessons = all.filter((e) => e.slug.startsWith('de/'));
 
-  // Pre-compute the per-track sibling list once and attach it to each path's
-  // props. Within a track, siblings are sorted by `order`, which determines
-  // both the sidebar listing and prev/next arithmetic.
   const byTrack = new Map<Lesson['data']['track'], Lesson[]>();
   for (const lesson of lessons) {
     const list = byTrack.get(lesson.data.track) ?? [];

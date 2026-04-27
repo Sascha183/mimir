@@ -1,14 +1,14 @@
 ---
-import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
 import {
   localizedAboutHref,
   localizedRootHref,
   localizedTrackHref,
   t,
   type Locale,
-} from '../i18n';
+} from '../../i18n';
 
-const locale: Locale = 'en';
+const locale: Locale = 'de';
 ---
 
 <!doctype html>
@@ -52,48 +52,14 @@ const locale: Locale = 'en';
       </div>
 
       <h1 class="mt-20 text-center text-4xl font-semibold tracking-tight md:text-5xl">
-        Why I built this
+        TODO: Übersetzen
       </h1>
 
       <p class="mt-12 text-xl font-light leading-relaxed text-apple-text">
-        This site exists because of two questions that wouldn't leave me alone.
+        <em>
+          Diese Seite wird übersetzt. <a href="/about" class="text-apple-blue no-underline hover:underline">In English lesen</a>
+        </em>
       </p>
-
-      <div class="mt-8 space-y-6 text-lg leading-[1.75] text-apple-text">
-        <p>
-          The first one came from a thought experiment. Imagine Doc Brown's DeLorean drops
-          you off five hundred years in the past. You'd have so much to tell. You'd describe
-          cars, and computers, and an invisible network that carries letters across the
-          planet in a heartbeat. People would gather to listen. And then someone, probably
-          the smartest person in the village, would ask the question we all dread:
-          <em>how does any of it actually work? Can you prove it?</em>
-        </p>
-
-        <p>
-          Most of us would fail that question. I know I would have. We live surrounded by
-          machines we use every day and could not begin to explain. We've outsourced
-          understanding to the engineers and scientists who built our world, and we've
-          quietly accepted that the inside of the box is not for us.
-        </p>
-
-        <p>
-          I disagree with that. Not because everyone needs to be an engineer, but because
-          curiosity is its own reward, and because the inside of the box turns out to be
-          far more elegant — and far more learnable — than it appears from the outside.
-        </p>
-
-        <p>
-          The second reason is simpler. The last few years have been an extraordinary moment
-          for artificial intelligence, and I've spent a lot of that time tinkering: small
-          projects, broken experiments, a lot of reading. At some point it occurred to me
-          that the thing I find most useful when learning something new is a patient,
-          well-paced explanation that doesn't skip the part I actually got stuck on. So I'm
-          trying to build that — for computing, for AI, for programming — one lesson at a
-          time.
-        </p>
-
-        <p>I hope it's useful. If it isn't, tell me what's missing.</p>
-      </div>
 
       <div class="mt-16 border-t border-apple-border pt-8">
         <div class="flex flex-col gap-3 text-base sm:flex-row sm:justify-between">

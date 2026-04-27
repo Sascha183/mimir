@@ -1,15 +1,14 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
-import LanguageSwitcher from '../../components/LanguageSwitcher.astro';
+import LanguageSwitcher from '../../../components/LanguageSwitcher.astro';
 import {
-  filterLessonsByLocale,
   localizedAboutHref,
   localizedLessonHref,
   localizedRootHref,
   stripLocaleSlug,
   t,
   type Locale,
-} from '../../i18n';
+} from '../../../i18n';
 
 type TrackSlug = CollectionEntry<'lessons'>['data']['track'];
 
@@ -26,7 +25,7 @@ const trackDescriptionKeys: Record<TrackSlug, string> = {
 
 export async function getStaticPaths() {
   const all = await getCollection('lessons', ({ data }) => !data.draft);
-  const lessons = all.filter((e) => e.slug.startsWith('en/'));
+  const lessons = all.filter((e) => e.slug.startsWith('de/'));
   const byTrack = new Map<TrackSlug, CollectionEntry<'lessons'>[]>();
   for (const lesson of lessons) {
     const list = byTrack.get(lesson.data.track) ?? [];
@@ -40,7 +39,7 @@ export async function getStaticPaths() {
   }));
 }
 
-const locale: Locale = 'en';
+const locale: Locale = 'de';
 const { track } = Astro.params as { track: TrackSlug };
 const { lessons } = Astro.props as { lessons: CollectionEntry<'lessons'>[] };
 const title = t(trackTitleKeys[track], locale);

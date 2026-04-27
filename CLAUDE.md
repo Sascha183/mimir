@@ -22,7 +22,8 @@ The site is deliberately tiny in scope: text, illustrations, and in-browser simu
 - **Framework:** Astro 5 with the MDX integration. Astro ships zero JavaScript by default and lets us hydrate interactive components as "islands" only where needed.
 - **Interactive components:** React (via `@astrojs/react`). Use functional components and hooks only — no class components.
 - **Styling:** Tailwind CSS via `@astrojs/tailwind`. No ad-hoc CSS files unless absolutely necessary; if added, scope them with CSS modules.
-- **Content:** MDX files in `src/content/lessons/`. Validated against the Zod schema in `src/content/config.ts`.
+- **Content:** MDX files in `src/content/lessons/<locale>/`, where `<locale>` is `en` or `de`. Validated against the Zod schema in `src/content/config.ts`.
+- **i18n:** Astro's built-in i18n with `prefixDefaultLocale: false`. English at `/`, German under `/de/`. UI strings live in `src/i18n/<locale>.json`; access them via the `t(key, locale)` helper in `src/i18n/index.ts`. See the **Internationalization** section below.
 - **Language:** TypeScript everywhere. No raw `.js` files except config files that have to be `.mjs` for tooling reasons.
 - **Hosting target:** Cloudflare Pages. Build output is fully static (no server-side rendering, no edge functions). The `public/_headers` file ships security headers with the deploy.
 
@@ -59,7 +60,7 @@ These are the rules that protect the project's security and educational mission.
 
 ## Lesson pattern
 
-Every lesson follows the same shape. When adding a new one, copy `src/content/lessons/02-the-nand-gate.mdx` as a template — don't invent a new structure.
+Every lesson follows the same shape. When adding a new one, copy `src/content/lessons/en/the-nand-gate.mdx` as a template — don't invent a new structure. Then mirror it under `src/content/lessons/de/` (a stub linking back to the English version is fine until the translation lands — see **Internationalization**).
 
 ```
 ---
@@ -127,6 +128,44 @@ When adding a new gate lesson, the order is: extend the library if needed → re
 
 ---
 
+## Internationalization
+
+The site ships in English (default, no URL prefix) and German (under `/de/`). Adding a third locale would mean adding it to the `LOCALES` tuple in `src/i18n/index.ts`, the `i18n.locales` array in `astro.config.mjs`, a new `src/i18n/<loc>.json`, a parallel page tree under `src/pages/<loc>/`, and a content subdirectory `src/content/lessons/<loc>/`.
+
+### Layout of i18n code
+
+- `astro.config.mjs` — `i18n: { defaultLocale: 'en', locales: ['en', 'de'], routing: { prefixDefaultLocale: false }, fallback: { de: 'en' } }`. The `fallback` is belt-and-suspenders; we intentionally ship a stub for every German page so visitors never hit a 404.
+- `src/i18n/<locale>.json` — flat-ish dictionary of UI strings. Both files have identical key sets. `{name}` placeholders get substituted by `t()` via its third argument.
+- `src/i18n/index.ts` — exports `t(key, locale, vars?)`, `Locale` type, the locale-aware URL helpers (`localizedRootHref`, `localizedAboutHref`, `localizedTrackHref`, `localizedLessonHref`), `switchLocalePath` (used by the language switcher), `stripLocaleSlug` (turns `en/the-nand-gate` → `the-nand-gate` for URL building), and `filterLessonsByLocale`.
+- `src/components/LanguageSwitcher.astro` — text-based "EN | DE" toggle in the nav. Sets the `hciw-lang` cookie when clicked.
+
+### Content structure
+
+Lessons live in `src/content/lessons/<locale>/<slug>.mdx`. Astro reports each entry's `slug` as `<locale>/<slug>` (e.g. `en/the-nand-gate`). When you need the bare slug for URLs or comparisons, run it through `stripLocaleSlug()`. Schema in `src/content/config.ts` is locale-agnostic.
+
+### Pages
+
+The English page tree lives at `src/pages/{index,about}.astro`, `src/pages/tracks/[track].astro`, `src/pages/lessons/[...slug].astro`. The German tree mirrors it under `src/pages/de/`. Each page hardcodes its `locale` constant; both English and German lesson routes filter the `lessons` collection by the `<locale>/` slug prefix in `getStaticPaths`.
+
+### Browser-language detection
+
+Because deploys are static (no edge functions), language detection runs **client-side** as an inline script in `src/pages/index.astro`:
+
+1. Only fires when `pathname === '/'`.
+2. Bails immediately if the `hciw-lang` cookie is set (user already chose).
+3. Otherwise checks `navigator.languages` for any `de*` entry and `location.replace('/de/')` if found.
+
+The cookie is set by `LanguageSwitcher.astro` whenever the user clicks the switcher, so a deliberate language choice is never overridden by browser detection on subsequent visits. There is a brief flash of English before redirect on first visit; this is the explicit tradeoff for keeping the deploy static.
+
+### Conventions when working on i18n code
+
+- **Never hardcode user-facing strings.** Every string the visitor reads goes through `t()`. If a key is missing, add it to *both* `en.json` and `de.json` in the same change — `de.json` may use `"TODO: Übersetzen"` as a placeholder, but the key must exist so the structure stays parallel.
+- **Build URLs through helpers.** Don't string-concatenate `/de/...` paths; use `localized*Href()` so a future locale slot-in works.
+- **New lessons ship in both locales.** A stub linking to the English version is acceptable for `de/` until a translation lands. See existing stubs in `src/content/lessons/de/` for the exact shape (one-line italicized Markdown).
+- **Adding a key everywhere.** When adding a UI string: (1) add to `en.json`, (2) add to `de.json` (use `"TODO: Übersetzen"` if no translation yet), (3) call `t('your.key', locale)` in the page/component.
+
+---
+
 ## Interactive component pattern
 
 Components live in `src/components/`. Each component:
@@ -152,11 +191,12 @@ Use this shape for "discover the rule" lessons. Don't gate the surrounding lesso
 
 ## Adding a new lesson
 
-1. Create `src/content/lessons/NN-slug.mdx` following the schema.
-2. If the lesson needs a new interactive component, build it in `src/components/` first and write its tests.
-3. Verify the lesson appears in the dev server (`npm run dev`).
-4. Run `npm run build` to confirm it passes the schema validation.
-5. Run `npm run test` to confirm component tests pass.
+1. Create `src/content/lessons/en/<slug>.mdx` following the schema.
+2. Create the matching `src/content/lessons/de/<slug>.mdx`. If the German translation isn't ready yet, ship a stub (TODO title + a one-line link to the English version — see existing stubs for the shape).
+3. If the lesson needs a new interactive component, build it in `src/components/` first and write its tests.
+4. Verify the lesson appears in both locales on the dev server (`npm run dev` → `/lessons/<slug>` and `/de/lessons/<slug>`).
+5. Run `npm run build` to confirm it passes the schema validation.
+6. Run `npm run test` to confirm component tests pass.
 
 ---
 
