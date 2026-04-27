@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 # test coverage
 coverage/
+
+# Reference materials (copyright-protected)
+references/
