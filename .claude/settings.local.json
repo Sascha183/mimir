@@ -11,7 +11,9 @@
       "Bash(grep -oE '\\(Previous|Next|Back|Finish\\)[^<]{0,60}' lessons/what-computers-do/index.html)",
       "Bash(grep -oE '\\(Previous|Next|Back|Finish\\)[^<]{0,60}' lessons/the-nand-gate/index.html)",
       "Bash(grep -oE 'aria-current=\"page\"[^>]*>[^<]{0,60}' lessons/the-nand-gate/index.html)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
