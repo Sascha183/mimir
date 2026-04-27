@@ -200,10 +200,11 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 - [x] Lesson 3: The NAND gate (slug: the-nand-gate)
 - [x] Lesson 4: Building a NOT gate (slug: not-from-nand)
 - [x] Lesson 5: Building an AND gate (slug: and-from-nand)
+- [x] Lesson 6: Building an OR gate (slug: or-from-nand) — followed Lesson 5's freeform `CircuitEditor` pattern (target truth table + hint + success block) rather than literal step-gating; matches the established conceptual model.
 
 ### Todo
 
-#### [ ] Lesson 6: Building an OR gate
+#### [x] Lesson 6: Building an OR gate
 - **Slug:** or-from-nand
 - **Order:** 6
 - **Duration:** 7 minutes

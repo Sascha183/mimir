@@ -1,0 +1,31 @@
+---
+title: "Building an OR Gate"
+track: "it-basics"
+module: "hardware-basics"
+order: 6
+duration: 7
+prerequisites: ["and-from-nand"]
+objectives:
+  - "Build an OR gate using only NAND and NOT primitives"
+  - "Recognize the symmetry between AND and OR via inversion"
+components: ["OrFromNandAndNot"]
+draft: false
+---
+
+import OrFromNandAndNot from '../../components/OrFromNandAndNot.tsx';
+
+The last gate you built was AND — a NAND with its output flipped one extra time. The trick was small but elegant: a single NOT on the output, and an AND falls out.
+
+OR is going to feel similar, but the symmetry hides in a different place.
+
+Here is the thing to notice. A NAND tells you when its inputs are *not both* on. So when both inputs are on, the NAND turns off. Every other case, it stays on. Now flip your point of view — what if I flipped both inputs *before* they reached the NAND, instead of flipping the output afterwards?
+
+If A and B both feed into a NAND, it goes off when both are on. But if I send "not A" and "not B" into a NAND instead, it goes off only when *both of those* are on — which means only when both A and B are *off*. Every other case (at least one of A or B is on), the NAND stays on. That is exactly what an OR gate does.
+
+The editor below has only NAND and NOT in its palette. Build it.
+
+<OrFromNandAndNot client:load />
+
+This is your first taste of a pattern that runs through all of digital logic: AND and OR are tied to each other through inversion. Flip the inputs of a NAND and you get OR. Flip the output of a NAND and you get AND. The same primitive, looked at two different ways, gives you both gates. (Mathematicians have a name for this relationship, but the elegance lands harder when you discover it by building rather than by being told.)
+
+Next: XOR. The trickiest of the standard gates, and the most useful for what comes after — addition, comparison, encryption. It's the first gate that needs more than one or two NANDs to build.
