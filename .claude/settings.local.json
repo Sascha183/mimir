@@ -23,7 +23,16 @@
       "Bash(curl -s http://localhost:4321/tracks/it-basics)",
       "Bash(curl -s http://localhost:4321/de/tracks/it-basics)",
       "Bash(curl -s http://localhost:4321/de/lessons/the-nand-gate)",
-      "Bash(curl -s http://localhost:4321/lessons/the-nand-gate)"
+      "Bash(curl -s http://localhost:4321/lessons/the-nand-gate)",
+      "Bash(curl -sf http://localhost:4321/lessons/the-byte/ -o /dev/null)",
+      "Bash(curl -s http://localhost:4321/lessons/the-byte/ -o /tmp/the-byte.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:4321/de/lessons/the-byte/ -o /tmp/the-byte-de.html)",
+      "Bash(curl -s http://localhost:4321/tracks/it-basics/ -o /tmp/track.html)",
+      "Bash(curl -s http://localhost:4321/lessons/the-byte/ -o .tmp-verify/the-byte.html)",
+      "Bash(curl -s http://localhost:4321/de/lessons/the-byte/ -o .tmp-verify/the-byte-de.html)",
+      "Bash(curl -s http://localhost:4321/tracks/it-basics/ -o .tmp-verify/track.html)",
+      "Bash(git commit *)"
     ]
   }
 }
