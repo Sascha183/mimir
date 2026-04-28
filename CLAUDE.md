@@ -400,7 +400,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
   - Connect to addressing: this is exactly how memory addressing works. Put a number into an address register, the decoder turns that number into "select this one byte out of 256."
   - Closing tease: now we have all the pieces — bytes, registers, bus, decoder. Time to put them together into the most important storage system in any computer: RAM.
 
-#### [ ] Lesson 13: Random Access Memory
+#### [x] Lesson 13: Random Access Memory (done) — built as `RandomAccessMemory.tsx`. 256-byte store rendered as a 16×16 grid of 22 px cells; per the roadmap, no cell tries to display its 8 bits. Cells are stored as a flat `number[256]` (each 0..255) rather than `Bit[256][8]` to keep state and JSON small. MAR is 8 toggle switches; clicking any grid cell also writes that cell's index into the MAR (both routes mentioned in the roadmap). Selected cell readout shows binary + decimal; data toggles + Write button capture the data into the selected cell. "Clear cell", "Clear all", and "Reset" cover destructive cases without nuking the bit/data setup mid-experiment.
 - **Slug:** ram
 - **Order:** 13
 - **Duration:** 12 minutes

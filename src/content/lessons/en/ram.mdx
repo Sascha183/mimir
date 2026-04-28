@@ -1,0 +1,50 @@
+---
+title: "Random Access Memory"
+track: "it-basics"
+module: "hardware-basics"
+order: 13
+duration: 12
+prerequisites: ["the-decoder"]
+objectives:
+  - "Describe how 256 registers, two decoders, and a Memory Address Register combine into RAM"
+  - "Use an address to read and write any byte in equal time, regardless of where it sits in the grid"
+  - "Recognize that RAM is half of a computer — storage — and that the CPU is the other half"
+components: ["RandomAccessMemory"]
+draft: false
+---
+
+import RandomAccessMemory from '../../../components/RandomAccessMemory.tsx';
+
+I have built every part. Bits. Gates. A memory bit. A byte. A register. A bus. A decoder. Each one was small and self-contained, and most of them were almost embarrassingly simple. Now I am going to put them all together to build the most important storage system in any computer: **Random Access Memory**, almost always shortened to **RAM**.
+
+The plan is short to describe and a little dizzying to picture.
+
+Take 256 registers. (Each register, remember, is a byte plus an enabler — eight bits of stored value plus a way to gate when those bits appear on the bus.) Arrange them in a 16×16 grid: sixteen rows, sixteen columns, one register at each intersection.
+
+Now wire two decoders to the grid. The first decoder is a **4-to-16 row decoder**: four input wires, sixteen output wires, exactly one row line on at any moment. The second decoder is a **4-to-16 column decoder**, identical in shape, controlling sixteen column lines. The 256 registers are wired so that each register's enable input is the AND of one row line and one column line — meaning a register is enabled only when *both* its row and its column are selected. With one row active and one column active, exactly one register at the intersection turns on.
+
+Where do the eight wires for the decoders come from? From a special register dedicated to addressing, called the **Memory Address Register**, or **MAR**. Eight bits, holding any number 0 to 255. The first four bits feed the row decoder; the last four feed the column decoder. Write a number into the MAR, the two decoders translate it into a row line and a column line, the intersection lights up, and that one register out of 256 is now connected to the bus. Pulse its set, you write to it. Raise its enable, you read from it. Every other register stays silent.
+
+That is RAM. A grid, two decoders, an address register, and the bus you already have.
+
+<RandomAccessMemory client:load />
+
+The widget makes the abstraction concrete. The grid shows all 256 cells at once — way too small to render each register's eight bits, but each cell is exactly one register's worth of memory. The selected cell (the one the MAR is pointing at) has a thick blue ring around it; cells that hold non-zero data get a faint blue tint, so you can see at a glance which addresses you have populated.
+
+Try it. Use the MAR switches to select address 42. Set the data switches to some pattern — say, decimal 65, which is the letter "A" in the standard text encoding. Press **Write**. Address 42 now holds 65. Notice the cell's tint changed.
+
+Now move somewhere far away. Address 200. The cell readout shows 0 — empty. Set new data, press Write. Address 200 now holds whatever you wrote. Move to address 73. Empty too. Write something else.
+
+Now go back to address 42. The 65 you stored there is still waiting. The 200 you wrote to is still wherever you put it. Move to either; equal speed. *That* is the "random access" in random access memory: there is no order, no queue, no rewinding a tape. Any address, any time, the same single tick of the clock to retrieve it. The grid does not care.
+
+You can also click any cell directly to point the MAR at it. Same outcome — the address lands in the MAR, the decoders fire, the cell becomes selectable. There are two ways into the same protocol: pure binary (the MAR switches) and pure spatial (the grid). They produce the same selection because they are setting the same number.
+
+Step back from the widget for a moment and notice what just happened in the math. Eight wires for the address. Two decoders. 256 separately-addressable bytes. With sixteen wires (two more decoders, slightly bigger), you would have 65,536 bytes. Twenty wires gives you a million. Thirty-two wires gives you over four billion. Modern computers use 64-bit addressing, which can name eighteen quintillion distinct bytes. That is grotesque overkill compared to any actual hardware ever built — but the point is that the address space costs almost nothing as it grows, because the decoder always turns N wires into 2^N selections. Linear growth in the wire count, exponential growth in the addressable space. That tradeoff, more than any other, is why a chip the size of your fingernail can hold eight billion bytes.
+
+So look at what you have now. You started Module 1 with one switch and one bulb, and built a single NAND gate. By the end of Module 1, you had two NAND gates wired into a feedback loop, and that single bit could remember things. Then this module: eight bits side by side became a byte. A byte plus a gate became a register. Several registers plus a shared wire became a bus. A few wires plus some AND gates became a decoder. And now, registers in a grid plus an address register and two decoders, addressed by a number — that is RAM. Every step was elementary. Nothing exotic ever joined the cast. The complexity emerged from arrangement.
+
+This is half a computer.
+
+The other half is the part that *does* things — that takes a byte from RAM, transforms it, and writes the result back. That is the **Central Processing Unit** — the CPU. The arithmetic-logic unit, the registers, the instruction decoder, the program counter, the clock that ticks all of it forward in lockstep. None of that exists yet in what we have built. But it sits on the same bus as the RAM, and it speaks the same protocol of enable-and-set. Every individual component will be familiar.
+
+That is Module 3. For now, take a beat. You have built the storage that every program in the world is loaded into when it runs. It is not a black box anymore.
