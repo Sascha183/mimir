@@ -1,0 +1,38 @@
+---
+title: "What We Have So Far — A Pause"
+track: "it-basics"
+module: "hardware-basics"
+order: 14
+duration: 5
+prerequisites: ["ram"]
+objectives:
+  - "Survey the building blocks assembled across Modules 1 and 2"
+  - "Recognize the conceptual shift from static structures (storage) to dynamic behavior (computation)"
+  - "Know what's coming next, and why it's the second half of a computer"
+draft: false
+---
+
+This is the end of Module 2. Before going on, I want to stop for a beat and look at what you have actually built.
+
+Module 1 started with the simplest possible electrical fact: a switch, a wire, a bulb. From that we got the NAND gate, then NOT, then AND, then OR, then XOR. By the end of the module, two NANDs in a feedback loop produced a thing that could *remember* — a single bit of state, held against the passing of time by the geometry of the wiring.
+
+Module 2 took that single memory bit and arranged it. Eight bits side by side became a byte. A byte plus an enabler became a register. Three registers tapping a shared bundle of wires became a bus. A few wires plus some AND gates became a decoder. Two hundred and fifty-six registers in a 16×16 grid, addressed by an 8-bit MAR through two decoders, became RAM.
+
+Look at what you can now answer, with no hand-waving, from first principles:
+
+- *What is a computer made of, physically?* A few flavors of logic gate, all reducible to NAND, all reducible to a switch and a wire. Nothing more.
+- *How does it remember anything?* Cross-coupled gates that listen to themselves. The same idea repeats from one bit up through a register, through a row of registers, through the entire grid of RAM.
+- *How does it find a particular byte out of millions?* A small binary number — an address — fed through a decoder, which translates it into one specific "you" signal. Linear cost in wires, exponential payoff in addressable space.
+- *How does data move between two places?* A shared bus, plus a protocol — exactly one source enabled, the destination's set is pulsed, the bytes flow.
+
+Every one of those answers was assembled, by you, out of components small enough to draw on a napkin.
+
+But there is a shape to what you have built, and it is worth naming. Everything in Modules 1 and 2 has been *static structure*. A latch is structure. A register is structure. RAM is structure. None of it does anything on its own. RAM does not compute; it just holds. A register does not transform; it just stores. The bus does not decide what to move; it just carries. If you put a computer made of nothing but Modules 1 and 2 onto your desk, plugged it in, and walked away, it would sit there forever, holding whatever bytes were last written into it, unchanged.
+
+A computer is not just memory. It is memory plus *a thing that operates on the memory*. A thing that picks bytes off the bus, transforms them according to a rule, and puts the result back. Run that loop billions of times per second and you get word processing, web browsers, video games, neural networks. But the loop is the thing. Without a loop, there is no computer — only a very precise filing cabinet.
+
+The piece that runs that loop is the **CPU**: the Central Processing Unit. The arithmetic-logic unit that adds and subtracts and compares. The instruction decoder that turns a stored byte into a directive. The program counter that keeps track of where in a program we are. The clock that ticks the whole apparatus forward in lockstep. None of these are exotic. Each will turn out to be made from the same things you already know — gates, registers, decoders, the bus. But the way they fit together is qualitatively different. Module 1 was about *what is a thing*; Module 2 was about *what happens when many things sit next to each other*; Module 3 is about *what happens when many things move in coordinated steps over time*.
+
+That is the next module. We are crossing a boundary.
+
+For now, take the win. You built half a computer. The half that remembers. There was no magic, and there does not need to be any magic in the half that thinks either. See you in Module 3.

@@ -422,7 +422,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 
 ### Closing reflection lesson — optional but recommended
 
-#### [ ] Lesson 14: What we have so far (a pause)
+#### [x] Lesson 14: What we have so far (a pause) (done) — pure prose, no widget. Frames the static-vs-dynamic boundary between Modules 1+2 (storage) and Module 3 (CPU/computation). Built it on the judgment call that lesson 13's ending recap is good but doesn't fully name the static/dynamic shift, and a clean Module-2 boundary lesson gives the learner a landmark before Module 3.
 - **Slug:** module-2-recap
 - **Order:** 14
 - **Duration:** 5 minutes
