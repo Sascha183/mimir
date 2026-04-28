@@ -1,0 +1,55 @@
+---
+title: "The Bus — Moving Data"
+track: "it-basics"
+module: "hardware-basics"
+order: 11
+duration: 9
+prerequisites: ["the-register"]
+objectives:
+  - "Recognize a bus as a single shared bundle of wires that connects many registers"
+  - "Use the protocol — enable the source, pulse Set on the destination — to copy a byte between registers"
+  - "Understand why exactly one register may drive the bus at a time, and what happens when two try"
+components: ["TheBus"]
+draft: false
+---
+
+import TheBus from '../../../components/TheBus.tsx';
+
+I have registers. Each one stores a byte and gates its output through an enabler. Now I want to do something useful with them: I want to *move* data. Specifically, I want to take the value sitting in one register and put it into another.
+
+The naive way would be to wire each register directly to every other register. But that gets out of hand fast. Three registers means six pairwise connections; ten registers means forty-five; sixteen would mean a hundred and twenty. And every connection is eight wires (one for each bit). The chip would drown in copper.
+
+There is a much better idea, and the rest of computer architecture is essentially built on it. **One shared bundle of eight wires that everyone connects to.** Every register's output is wired to those eight wires. Every register's input is wired to those eight wires. The bundle is called a **bus**.
+
+Now the protocol. To move a byte from R0 to R2, I do exactly two things:
+
+1. Turn on R0's **enable**. R0's stored byte appears on the bus.
+2. Pulse R2's **set**. R2 captures whatever is currently on the bus — which, because of step 1, is R0's value.
+
+That is it. Two actions, eight wires shared between an arbitrary number of registers, and bytes can be moved from any register to any other. The hardware cost stays roughly constant no matter how many registers I add — every new register just taps the same bus.
+
+There is one rule the protocol depends on, and it is non-negotiable: at any given moment, **exactly one source may drive the bus**. If two registers both have their enables on, both are trying to push their bytes onto the same eight wires at the same time, and the result is electrical chaos — neither value is reliably present. The hardware does not gracefully resolve this; it just produces garbage. So the rule, enforced in software (or by careful design), is: only one enable on at a time.
+
+<TheBus client:load />
+
+The widget gives you eight input switches at the top. Those switches act as a permanent "input source" — whatever pattern they are showing appears on the bus by default, *as long as no register has its enable on*. (Conceptually they represent whatever is feeding values into the system from outside — a keyboard, a sensor, the previous step in a calculation.)
+
+Below the bus, three registers: R0, R1, R2. Each one shows its stored byte, has a **Set** button (capture from bus), and has an **Enable** toggle (drive onto bus).
+
+Try this sequence to feel the protocol.
+
+1. Toggle some input switches to make a value on the bus. Say bits 0, 3, 5 — that gives you decimal 41.
+2. Click R0's Set. R0 captures 41.
+3. Change the input switches to a different value — try just bit 6, decimal 64.
+4. Click R1's Set. R1 captures 64.
+5. Now R0 = 41, R1 = 64, R2 = 0. The bus is showing the inputs (64).
+6. Flip R0's Enable on. The bus changes — it now shows 41, R0's value, *not* the inputs. The inputs are still toggled, but R0 is louder.
+7. Click R2's Set. R2 captures the bus, which is currently R0's value. R2 is now 41.
+
+Done. You moved a byte from R0 to R2 using only the shared bus and the two simple controls. Notice that R0 still has 41 — the operation was a *copy*, not a *move*. Nothing was lost. Programmers sometimes say "move R0 to R2" colloquially, but at the hardware level, every "move" is a copy.
+
+Now try the conflict. Turn on R0's Enable and R1's Enable at the same time. The bus turns red, the readout switches to a warning, and the Set buttons get disabled. Two voices on the same wire, no agreement. The hardware refuses to participate. Turn one of the enables off and the bus comes back to life.
+
+That is the whole bus protocol, and it is the whole job of a CPU's lowest level: choose a source register, raise its enable, choose a destination register, pulse its set. Move bytes around, one tick at a time, with the bus as the highway and the enables as on-ramps. Add an arithmetic unit to the bus (something that takes two inputs and produces a sum) and suddenly you can compute. Add memory to the bus (a lot of registers, addressed by a number) and suddenly you can store programs. But all of that is just more things tapped into the same shared bundle of eight wires.
+
+One small loose end. We have three registers in this widget. A real CPU has more like sixteen, and a memory chip has thousands. To enable the right register at the right time, the CPU needs to take a small number — the *address* of the register it wants — and turn it into a single "you specifically" signal aimed at the right enable input. That is the next idea: the **decoder**.

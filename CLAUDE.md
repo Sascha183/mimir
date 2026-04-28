@@ -367,7 +367,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
   - Why this matters: this is how the CPU has multiple working bytes (R0, R1, R2, etc.) all sharing the same wires without interfering with each other. Only one register is "enabled" at any given moment.
   - Closing tease: now that we can mute and unmute registers, we can connect many of them to the same shared wire — a Bus.
 
-#### [ ] Lesson 11: The Bus — moving data
+#### [x] Lesson 11: The Bus — moving data (done) — built as `TheBus.tsx`. Three registers (R0/R1/R2) tap a single shared 8-bit bus drawn as one thick horizontal line. Eight input switches act as a permanent always-on source that drives the bus when no register is enabled. Each register has Set (capture from bus) and Enable (drive onto bus). Bus value is computed from a single `computeBus(state)` function: 0 enabled → inputs, 1 enabled → that register, 2+ enabled → conflict. During conflict the bus turns red, the readout becomes a role=alert warning, and Set buttons get `disabled`. `pulseSet` uses functional setState so it always sees the freshest enables.
 - **Slug:** the-bus
 - **Order:** 11
 - **Duration:** 9 minutes
