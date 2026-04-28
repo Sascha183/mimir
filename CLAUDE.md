@@ -351,7 +351,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
   - Brief note: the order of bits in a byte matters — it gives us a code (binary number code). We'll explore that more in the next lesson.
   - Closing tease: but storing a byte is half the battle. We also need to control WHEN it gets used — when we let it out and when we keep it private. That requires one more idea.
 
-#### [ ] Lesson 10: Controlling access — the Enabler and the Register
+#### [x] Lesson 10: Controlling access — the Enabler and the Register (done) — built as `TheRegister.tsx`. Reuses lesson 9's byte-write UI (8 toggles + Store) and adds an Enabler block: 8 ANDs rotated -90° so data flows top-to-bottom, with a single shared horizontal enable line crossing every gate's enable input. Output cells beneath show stored AND enable per bit. Side-by-side stored/output readouts make the gating obvious. Reset clears everything including enable.
 - **Slug:** the-register
 - **Order:** 10
 - **Duration:** 8 minutes

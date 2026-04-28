@@ -1,0 +1,48 @@
+---
+title: "Controlling Access — the Enabler and the Register"
+track: "it-basics"
+module: "hardware-basics"
+order: 10
+duration: 8
+prerequisites: ["the-byte"]
+objectives:
+  - "Identify the problem with always-on byte outputs and explain why they need to be gated"
+  - "Describe how an Enabler — eight AND gates with a shared enable line — controls when a byte is exposed"
+  - "Recognize that a byte plus an enabler is a Register, the unit every CPU storage cell is built from"
+components: ["TheRegister"]
+draft: false
+---
+
+import TheRegister from '../../../components/TheRegister.tsx';
+
+So I have a byte. Eight cells side by side, captured atomically by a shared set wire. Press Store, the byte takes on a value. Read the bits, get the value back. Everything I need, right?
+
+Almost. There is one quiet problem, and it does not show up until I try to build something larger. The byte's outputs are *always on*. Every stored cell is permanently wired to whatever sits downstream — a display, another circuit, a CPU register. The byte does not have a "pause" mode. It is constantly broadcasting its contents.
+
+That is fine when there is just one byte talking to one downstream thing. But a real computer has many bytes — sixteen registers in the CPU, dozens of working bytes around the chip, hundreds or thousands in main memory. They all need to share the same wires (we will call those wires a *bus* in the next lesson). And if every byte is always shouting its contents onto the same wires, those wires receive a chaos of mixed signals. There is no way to say "give me the value from byte number 3, ignore the rest."
+
+So I need a way to *mute* a byte. To say: keep your stored value, but don't put it on the output wires unless I tell you to.
+
+The trick is, as it usually is in this curriculum, embarrassingly simple. I take each of the byte's eight stored bits and feed it into an AND gate. The other input of every AND is wired to a single shared signal — call it **enable**. When enable is 0, every AND outputs 0, no matter what the stored bit is. When enable is 1, every AND passes its stored bit straight through.
+
+That arrangement — eight AND gates with one shared enable input — has a name. The book calls it an **Enabler**. It is a one-bit faucet with eight spouts: turn the faucet, all eight spouts open or close together.
+
+A byte and an enabler bolted together makes a **Register**. From now on, when you see "R0", "R1", or "R" in any computer diagram, that is what is inside: a byte that holds the value, plus an enabler that controls when it is exposed. Every storage location in a CPU is one of these. You are looking at the building block.
+
+<TheRegister client:load />
+
+The widget gives you both controls. Up top, the eight input switches and the **Store** button — same as last lesson, that writes a byte into the stored cells. Below the stored cells is the enabler: eight AND gates, with the data flowing top-to-bottom and the shared enable line crossing through every gate's second input. Below that, the eight **output** cells — what the rest of the world actually sees.
+
+Try the four cases.
+
+**Empty byte, enable off.** Default state. Stored byte is `0000 0000`, output is `0000 0000`. Boring.
+
+**Empty byte, enable on.** Flip the **Enable** switch. The enable line lights up blue, but the output is still `0000 0000`. There is nothing to expose, so nothing is exposed.
+
+**Stored byte, enable off.** Flip Enable back off. Set a few input switches — try bits 0, 2, 3, 5 — and press Store. The stored byte now reads `0010 1101` (decimal 45). But the output? Still `0000 0000`. The byte is holding a value, but the enabler is muting it.
+
+**Stored byte, enable on.** Flip Enable on. The output instantly becomes `0010 1101` — the stored byte appears on the output wires. Flip Enable off again, the output blanks back to zero. The stored value never moved. Only the gate did.
+
+That last switch is the whole point of the lesson. The byte does not lose its memory when you mute it. The enabler is a curtain in front of the byte, not a delete button. Drop the curtain, the byte is still there, ready to be revealed again the moment you raise it.
+
+In the next lesson I am going to wire several of these registers up to the same shared wires — a bus — and use the enable signals to control which register gets to talk at any given moment. That is how a CPU does anything with its stored data: pick a source register, raise its enable, the bus carries the byte to a destination register, the destination grabs it. Move bytes around, one shared bus, many silent registers, one talker at a time. Made possible by the small idea you just looked at.
