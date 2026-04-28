@@ -1,0 +1,68 @@
+---
+title: "The Instruction Cycle"
+track: "it-basics"
+module: "hardware-basics"
+order: 20
+duration: 12
+prerequisites: ["control-section"]
+objectives:
+  - "Describe the fundamental loop every CPU runs forever: fetch an instruction, execute it, repeat"
+  - "Trace one instruction cycle from step 1 through step 7, watching each register, the bus, and the ALU as the cycle plays"
+  - "See three different instructions (ADD, LOAD, JMPR) running on the same CPU and recognize that the fetch phase is identical for all three"
+components: ["InstructionCycle"]
+draft: false
+---
+
+import InstructionCycle from '../../../components/InstructionCycle.tsx';
+
+We have all the pieces. Memory (RAM, registers). Computation (the ALU). Movement (the bus). Timing (the clock and the stepper). Wiring (the control section). It is now time to put them all in one diagram and watch a single instruction cycle play out. This is the moment Module 3 has been building toward, and it is genuinely something to see.
+
+Here is what is going to happen, in one paragraph, before we look at the widget:
+
+The CPU is in a loop. The loop runs forever, as long as the chip has power. Every iteration of the loop is **one instruction cycle**, and one instruction cycle is exactly seven clock periods — exactly one full lap of the stepper. The first three steps are *fetch*: figure out which instruction comes next, retrieve it from RAM, and store it in IR. The next three steps are *execute*: do whatever the instruction says. The seventh step is *reset*: set the stepper back to step 1 so the cycle can begin again. Then it does begin again, with whatever IAR is now pointing at. Forever.
+
+That loop is what running a program means. There is nothing else. Word processors are loops of this kind. Web browsers are loops of this kind. The neural network that wrote some of the prose in this curriculum was a loop of this kind, running for trillions of iterations. The loop is the entire computer.
+
+<InstructionCycle client:load />
+
+The widget shows the full CPU. From top to bottom:
+
+- **RAM** — sixteen bytes of memory. The cell at MAR's address has a thick blue ring around it; this is the byte the CPU is currently looking at. Cells with non-zero values get a faint blue tint.
+- **The bus** — the central highway. When some register's enable wire fires, that register's byte appears on the bus, and the bus turns green to indicate it has a driver. When nothing is enabled, the bus shows "—".
+- **CPU registers** — IAR, MAR, IR, TMP, ACC on one side; R0–R3 on the other. Each register shows its current value as a number and as eight bits. The border colors carry the action state from the active step: green if the register is being enabled (driving the bus this step), blue if it is being set (capturing this step).
+- **The ALU** — its op-select label shows what operation is currently selected, and the output is what the ALU is currently computing from the bus and TMP. When no ALU action fires this step, the box is in idle gray.
+- **Stepper row** — seven cells, one per step, with the active one highlighted. Below the cells is a labeled action chip view of what the active step is doing.
+
+Three instructions are pre-loaded as demos. Each one starts with sensible register values so the cycle has something interesting to compute. Pick one and step through it.
+
+### Walk-through: ADD R2, R3
+
+Click ADD R2, R3. R2 holds 5; R3 holds 3. The instruction byte is sitting at RAM[0], and IAR points at it. Press Step seven times and watch what happens, one step per click.
+
+- **Step 1** (fetch). IAR is enabled onto the bus — see the bus light up with the value 0 (IAR's current value). MAR is set, capturing 0. ACC is also set: the ALU is configured for ADD +1 (add one to whatever's on the bus), so ACC captures 1. IAR is now in MAR (so RAM knows where to look) and ACC holds the *next* address, ready for step 3. Two things happened in one step.
+- **Step 2** (fetch). RAM is enabled — its byte at address 0 (the instruction byte) appears on the bus. IR is set, capturing the instruction byte. The CPU now knows which instruction it is running.
+- **Step 3** (fetch). ACC is enabled, putting 1 on the bus. IAR is set, capturing 1. Now IAR points one byte past where it just was — exactly where the next instruction would live.
+- **Step 4** (execute). R2 is enabled — its byte (5) appears on the bus. TMP is set, capturing 5. TMP now holds the first operand for the addition.
+- **Step 5** (execute). R3 is enabled — its byte (3) appears on the bus. The ALU is set to ADD; with bus = 3 and TMP = 5, the ALU's output is 8. ACC is set: it captures the ALU's output, not the bus. ACC now holds 8.
+- **Step 6** (execute). ACC is enabled — its byte (8) appears on the bus. R3 is set, capturing 8. R3 now holds the sum.
+- **Step 7** (reset). Stepper resets to step 1. The cycle is over.
+
+Press Run instead of stepping if you want to see it play continuously. The default rate is slow enough to read each step. Press Reset to run the same instruction again from scratch.
+
+### Walk-through: LOAD R0, R1
+
+Click LOAD R0, R1. R0 holds the address 7; RAM[7] holds 99; R1 starts at 0. Step through and watch step 4 send R0 (= 7) to MAR, step 5 enable RAM (which puts RAM[MAR] = 99 on the bus) and capture into R1. Step 6 is empty — LOAD only needs two execute steps. By the end, R1 holds 99.
+
+Notice how the fetch phase (steps 1–3) is **identical** to ADD's fetch. Same actions, same registers touched. That's the gift of the architecture: every instruction is fetched the same way, regardless of what it ends up doing.
+
+### Walk-through: JMPR R0
+
+Click JMPR R0. R0 holds 12 — an address somewhere far ahead in RAM. The execute phase is even simpler: step 4 enables R0 onto the bus and sets IAR. After this single execute step, IAR is no longer 1 (where it was after fetch); it is 12. The next time the CPU enters its fetch phase, it will go look at RAM[12] for its next instruction. The CPU has *jumped*. Steps 5 and 6 are empty — JMPR is the simplest of the three.
+
+### What you have now
+
+Three instructions, three different execute phases, one shared fetch phase, one shared cycle structure. This is a *complete computer*. Everything you have built across the three modules combines here. There is nothing else. There never was anything else.
+
+The next several lessons fill in the rest of the instruction set — ALU instructions in their full variety, LOAD and STORE for memory access, the DATA instruction that gets literal values into registers, and the JUMPs (conditional and unconditional) that let programs branch and loop. Each new instruction is a new recipe; the CPU diagram and the cycle do not change. The diagram is the chip. The recipes are the software it runs.
+
+Press Reset, switch instructions, run them side by side. Get a feel for what each one *touches*. The whole rest of Module 3 is about extending this same widget with more recipes.

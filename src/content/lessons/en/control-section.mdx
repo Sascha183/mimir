@@ -1,0 +1,72 @@
+---
+title: "The Control Section"
+track: "it-basics"
+module: "hardware-basics"
+order: 19
+duration: 10
+prerequisites: ["the-stepper"]
+objectives:
+  - "Describe what the control section is: a fixed wiring panel that turns 'which step + which instruction' into 'which actions fire'"
+  - "Recognize that the fetch phase (steps 1-3) is identical for every instruction, while the execute phase (steps 4-6) varies"
+  - "Read a step-action recipe and predict what the CPU will do at each step of an instruction"
+components: ["ControlSection"]
+draft: false
+---
+
+import ControlSection from '../../../components/ControlSection.tsx';
+
+We have a clock. We have a stepper that turns the clock into seven distinct moments per instruction. What we don't have yet is the part that *uses* those moments to make things happen — the part that says, at step 4 of an ADD, "register R2 should put its byte on the bus and TMP should capture it." That part is the **control section**.
+
+Before I describe what the control section does, I need to introduce a small cast of new register names. The CPU has eight registers in addition to the four general-purpose ones (R0, R1, R2, R3) you already know about:
+
+- **IAR** (Instruction Address Register) — holds the address in RAM of the next instruction the CPU will execute. The "you are here" pointer through the program.
+- **MAR** (Memory Address Register) — holds the address that RAM is currently being asked to read from or written to. From the previous module — same MAR, now connected to the rest of the CPU.
+- **IR** (Instruction Register) — holds the *byte that is the current instruction*. Once fetched from RAM, the instruction lives here while the execute phase runs.
+- **TMP** — a one-byte holding cell used by the ALU. When the ALU needs two inputs (for ADD, AND, OR, etc.), one of them comes off the bus directly and the other is held in TMP.
+- **ACC** (Accumulator) — a one-byte register that captures the ALU's output. Most computations land here first, then move on to wherever they belong.
+
+You don't have to memorize all five at once — the recipes below will show how each gets used.
+
+Now: the control section. It is, physically, just a panel of AND gates and OR gates. Its inputs are the seven step wires from the stepper and the bits of whatever instruction is currently sitting in the IR. Its outputs are the enable and set wires of every register in the CPU, plus the three op-select bits going into the ALU. The wiring inside is intricate but completely unmagical — it's the same kind of gate structure we built piece-by-piece in Module 1, just at a different scale.
+
+Here is the trick that makes the whole thing work, in one sentence:
+
+> **For each step, depending on which instruction is in the IR, a specific set of action wires fires.**
+
+That's the entire idea. Different instructions have different wirings inside the control section, so step 4 of an ADD does different things than step 4 of a JUMP. The wiring is fixed when the chip is designed; what *varies* is which wiring path lights up at each moment, based on which instruction is currently being executed.
+
+Rather than draw the wiring (which is a rats-nest), I'll show you what it *produces*. Below is the result of the wiring, in recipe form: pick an instruction, see what fires at each step.
+
+<ControlSection client:load />
+
+A few patterns worth noticing.
+
+**Steps 1, 2, and 3 are identical for every instruction.** Switch between ADD, LOAD, and JMPR — the first three rows don't change. That's the fetch phase, and fetching always works the same way:
+
+- *Step 1:* Take whatever address is in IAR and put it into MAR (so RAM knows where to look). At the same time, run IAR through the ALU's "+1" path and stash the incremented value in ACC. (We'll need that incremented value in step 3.)
+- *Step 2:* Tell RAM to enable the byte at the address now in MAR. That byte is the instruction we're about to execute. Capture it into IR.
+- *Step 3:* Take the incremented IAR (currently sitting in ACC) and copy it back into IAR. Now IAR points at the byte right after this instruction — exactly where we need to be next time.
+
+After three steps, the CPU knows what instruction to run (IR holds it) and IAR is set up for the next instruction. Beautiful. And these three steps will run for *every* instruction the CPU ever executes, because every instruction has to be fetched.
+
+**Steps 4, 5, and 6 are where the instruction actually does its work, and these vary.** Pick the instructions one at a time and watch the rows change:
+
+- ADD R2, R3 needs three execute steps because addition is a three-step dance: load TMP with R2, run R3 through the ALU summed with TMP into ACC, copy ACC back to R3. Three actions, three steps.
+- LOAD R0, R1 only needs two steps: route R0 (the address) into MAR, then read RAM into R1. Step 6 is empty.
+- JMPR R0 only needs one step: route R0 directly into IAR. Steps 5 and 6 are empty.
+
+When a step is "empty," nothing happens that cycle — the CPU still ticks, but no action wires fire. Empty steps cost time. This is one reason real CPU instruction sets are designed to keep the busy steps mostly full: empty steps are wasted clock cycles.
+
+**Step 7 is always reset.** Every instruction ends by clearing the stepper back to step 1, ready for the next instruction. The seven-step cycle restarts immediately.
+
+Look at the chips in the table. Each one is one *action wire* — one thing the control section is making the CPU do at that moment. Three kinds of action recur:
+
+- *Enable* (green) — gate a register's bytes onto the bus. Exactly one register can be enabled at a time, or the bus would have a conflict (we saw this back in the bus lesson).
+- *Set* (blue) — tell a register to capture whatever is currently on the bus. Multiple registers can have their set wires high in different steps; that's how data flows through the CPU.
+- *ALU* (purple) — set the ALU's three op-select bits to a specific operation. The ALU is always computing; this just chooses which operation's output gets exposed.
+
+Press Start and watch the active row march down the table. At each step, the chips that should fire are visually grouped on the active row. If you're patient enough to slow the rate down to 3000 ms or so, you can read each step's actions out loud as it happens: "step 4 — enable R2, set TMP." Switch to LOAD and read again: "step 4 — enable R0, set MAR."
+
+That's the control section. It's not a new component the way the ALU was — it's just *wiring*. AND gates and OR gates connecting steps to actions, with the IR's bits as additional inputs that select which subset of wiring is active. The cleverness is entirely in the wiring pattern.
+
+Now we can finally put the whole picture together. Clock + stepper + control section + ALU + registers + RAM + bus = the CPU. The next lesson is the climax of the module: we run a complete instruction cycle from fetch through execute, watching each piece play its role at the right moment. The recipes you just read will become animations on a CPU diagram.

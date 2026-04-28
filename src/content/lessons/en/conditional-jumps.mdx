@@ -1,0 +1,72 @@
+---
+title: "Flags and Conditional Jumps"
+track: "it-basics"
+module: "hardware-basics"
+order: 25
+duration: 11
+prerequisites: ["jump-instructions"]
+objectives:
+  - "Describe the flag register: four bits (Carry, A larger, Equal, Zero) that ALU instructions update"
+  - "Read the JCAEZ instruction format and predict whether a given combination of flag bits and condition mask will jump"
+  - "Trace a complete decision program (find the larger of two numbers) and identify which path the JA branch takes for each input pair"
+components: ["ConditionalJumpsCycle"]
+draft: false
+---
+
+import ConditionalJumpsCycle from '../../../components/ConditionalJumpsCycle.tsx';
+
+The loops you saw in the last lesson go forever. They do not stop. Useful loops have *stopping conditions*: keep adding until the sum exceeds 100, keep reading bytes until you hit a zero, keep iterating until the input is sorted. To express stopping conditions, the CPU needs to look at *something* and decide whether to jump or not. It has to make a decision. That decision is the third great invention: **conditional jumps**.
+
+Conditional jumps work in two parts. First, the CPU needs to *remember* something about the most recent computation — was the result zero? Did the addition overflow? Was one number larger than another? The component that remembers this is the **flag register**: four single bits called Carry, A larger, Equal, and Zero. Every ALU instruction that runs *also* updates these four bits as a side effect.
+
+Second, the CPU needs an instruction that *reads* the flag register and decides whether to jump. That instruction is **JCAEZ**, named after the four flag letters. JCAEZ has a 4-bit *condition mask* that says which flags to care about: bit 3 says "I care about Carry," bit 2 says "I care about A larger," bit 1 says "I care about Equal," bit 0 says "I care about Zero." If any masked-on flag is set in the flag register, JCAEZ jumps to the address in the next byte. If none are set, JCAEZ skips past the address byte and continues with the next instruction.
+
+In practice you usually use JCAEZ with a single bit set, and the assembler renders it with a memorable name:
+
+- **JC** — jump if Carry — `0101_1000`. Useful after ADD: did it overflow?
+- **JA** — jump if A larger — `0101_0100`. Useful after CMP.
+- **JE** — jump if Equal — `0101_0010`. Also useful after CMP.
+- **JZ** — jump if Zero — `0101_0001`. Useful after any ALU op: was the result zero?
+
+You can combine them. `JCAEZ` with mask `0101` (= JE + JZ) jumps if Equal *or* Zero is set. The flexibility costs nothing extra in the chip — it is the same JCAEZ wiring, just with more of the mask bits set.
+
+There is one more small instruction worth introducing: **CLF** (clear flags), encoded as `0110_0000`. It zeros all four flags. Most of the time you do not need it — every ALU instruction overwrites the flags as a side effect, so the flags reflect the most recent computation. CLF matters when you are about to test flags from "long ago" and want to be sure they are starting fresh.
+
+### One subtle convention worth knowing
+
+The CPU's "A larger" flag means *the value on the main bus is larger than the value in TMP*. That phrasing is hardware-talk; what does it mean for a programmer writing `CMP R0, R1`?
+
+Look at the CMP recipe. Step 4 enables R0 and sets TMP, so TMP holds R0. Step 5 enables R1, which puts R1 on the bus. So during the CMP comparison, the bus holds R1 and TMP holds R0. The "A larger" flag is therefore set if **R1 > R0** — the *second* operand is larger than the first.
+
+That is opposite from what reading "CMP R0, R1" out loud would suggest. But it is what the hardware does. You either remember it as a quirk, or you train yourself to read CMP RA, RB as "compare bus-side RB against TMP-side RA." Either way: when you write `JA <addr>` after `CMP R0, R1`, the jump fires when R1 > R0.
+
+<ConditionalJumpsCycle client:load />
+
+The widget runs three variants of the same program. The program's job is: find the larger of R0 and R1, store it in R3. Pick a scenario:
+
+- **R0 > R1 (7 vs 4):** the A larger flag stays at 0 (because R1 is *not* larger than R0). JA does not branch. The program falls through to "R3 = R0", and R3 ends at 7.
+- **R1 > R0 (4 vs 7):** the A larger flag is set (R1 > R0). JA branches to the "result is R1" path. R3 ends at 7.
+- **R0 = R1 (5 vs 5):** the Equal flag is set, but A larger is *not*. JA does not branch. The fall-through path runs: R3 = R0 = 5.
+
+Pick a scenario, slow the rate down, and step through. Watch the flag register as it updates after CMP runs (step 5 of the CMP cycle is when both ACC and FLAGS get set). Watch how JA's recipe in step 5 decides — the action chips visibly differ between "enable RAM, set IAR" (jump) and "enable ACC, set IAR" (skip).
+
+### What you can build with this
+
+Look at what you have:
+
+- **DATA**: get arbitrary literals into registers.
+- **LOAD/STORE**: move bytes between RAM and registers.
+- **ALU instructions**: compute. Set flags as a side effect.
+- **JMP / JMPR**: redirect execution unconditionally.
+- **JCAEZ**: redirect execution conditionally, based on flags.
+- **CLF**: reset flags.
+
+Combine them. Want a loop that runs ten times? `DATA R0, 10; DATA R1, 0; <loop body>; ADD R1, +1; CMP R0, R1; JE <out>; JMP <loop>`. Want an `if A then X else Y`? Test the condition, JA to one branch, fall-through is the other. Want a function call? Use JMP to leave; remember the return address in a register; use JMPR to come back.
+
+Every program you have ever used is built from these atoms. Operating systems. Web browsers. Word processors. Video games. AI models. Each one is a sequence of these tiny operations, written in machine code or compiled down to it, ticking through the same fetch-execute cycle billions of times per second. The CPU you have built is mathematically the same thing. Smaller, slower, but architecturally complete.
+
+### What's left
+
+We have built a complete CPU. The next lesson is a recap and demonstration — no new hardware, just a slightly bigger program running on what you already have, plus a moment to reflect on the journey. After that, Module 3 is done. Module 4 (peripherals — connecting the CPU to the outside world) and Module 5 (software — what we actually do with all this) are separate scopes. The hardware story is essentially complete.
+
+You built half a computer in Module 1 (gates). You built another half in Module 2 (memory). And you built the engine that drives it all in Module 3. The big picture is in place.

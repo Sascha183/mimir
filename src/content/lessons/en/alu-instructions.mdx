@@ -1,0 +1,52 @@
+---
+title: "ALU Instructions"
+track: "it-basics"
+module: "hardware-basics"
+order: 21
+duration: 9
+prerequisites: ["instruction-cycle"]
+objectives:
+  - "Read the 8-bit format of an ALU instruction: 1 ALU flag bit, 3 op bits, 2 reg-A bits, 2 reg-B bits"
+  - "Recognize that the result of every ALU instruction (except CMP) is written back into register B, replacing its value"
+  - "Generate any of the 128 possible ALU instructions and predict what one cycle of the CPU will produce"
+components: ["AluInstructionsCycle"]
+draft: false
+---
+
+import AluInstructionsCycle from '../../../components/AluInstructionsCycle.tsx';
+
+We have a CPU. We have an instruction cycle. What we don't yet have is an *instruction set* — a catalog of the specific things the CPU can be asked to do. Module 3's remaining lessons fill that catalog out, one family at a time. This lesson covers the most common family: ALU instructions.
+
+An ALU instruction tells the CPU to take two registers (or sometimes one), run them through the ALU with a chosen op, and write the result into a register. From the CPU's point of view it's exactly what the recipe in lesson 19 described: enable register A into TMP, enable register B with the ALU set to the chosen op and capture into ACC, then copy ACC back into register B. Three execute steps, plus the same three fetch steps and one reset that every instruction shares.
+
+The clever thing — and it's worth stopping on — is that this single recipe covers a *huge* range of instructions. The op-select can be any of the eight ALU operations (ADD, SHR, SHL, NOT, AND, OR, XOR, CMP). Register A can be any of the four general-purpose registers (R0, R1, R2, R3). Register B can be any of those same four. Eight times four times four is 128 distinct instructions, all of them implemented by the same wiring. The only thing that changes between them is the bit pattern in IR, and the control section's wiring routes the bits to the right places.
+
+How does that bit pattern work? Each ALU instruction is one byte — eight bits — broken into four chunks:
+
+- **Bit 7 (the high bit):** always `1`. This is the "I am an ALU instruction" flag. The control section uses this bit to decide whether to interpret the rest of the byte as an ALU instruction or something else (LOAD, STORE, JMP, etc.). Every other instruction family will start with bit 7 = 0.
+- **Bits 6–4 (three bits):** the op-select. Eight possible values, mapping to the eight operations in the order ADD / SHR / SHL / NOT / AND / OR / XOR / CMP.
+- **Bits 3–2 (two bits):** register A — which register's contents will go into TMP at step 4. Two bits give us four registers (R0 through R3).
+- **Bits 1–0 (two bits):** register B — which register's contents drives the ALU at step 5 *and* receives the result at step 6.
+
+So `1000 1011` decodes to: ALU flag (1), op-select 000 (ADD), regA = 10 (R2), regB = 11 (R3). That's `ADD R2, R3` — add the contents of R2 and R3, store the result in R3.
+
+<AluInstructionsCycle client:load />
+
+The widget gives you the controls a CPU designer would have given themselves. Pick an op. Pick a register A. Pick a register B. The 8-bit instruction byte updates in real time, with the four chunks color-coded to the format above. Below the picker is the same CPU diagram you saw in the previous lesson. Press Step to walk the cycle through, or Run to play it continuously.
+
+Try a few combinations:
+
+- **ADD R0, R1.** R0 holds 12, R1 holds 5. After one cycle, R1 holds 17. Notice R1's value was *replaced*, not preserved. The result always lives in register B.
+- **AND R0, R1.** Same starting values: R0=12, R1=5. After one cycle, R1 holds 4 (binary 0100 — the bits that were 1 in both 12 = 1100 and 5 = 0101).
+- **XOR R0, R1.** R1 holds 9 (binary 1001 — the bits that differ between the two inputs).
+- **NOT R0, R0.** Choose R0 for both A and B; the NOT op flips every bit of A and writes the result back into B (which happens to also be R0). R0 becomes 243 (= 255 - 12, since flipping 0000 1100 gives 1111 0011).
+- **CMP R2, R3.** R2 holds 9, R3 holds 3. Step 6 is *empty* — CMP doesn't write back to a register. Run the cycle and watch R3 stay at 3. CMP is the only ALU op that doesn't produce a stored result. What it produces is *flag bits* — Carry, Equal, A larger, Zero — that get used by the conditional-jump instructions we'll meet in a later lesson. For now: CMP runs, the bus moves a byte through the ALU, and nothing visible happens to the registers. The point is the comparison; the comparison's *result* is captured in flags we're not yet displaying.
+
+Now look at what you can do, just from this one family of instructions:
+
+- Add or subtract numbers (subtraction is "add the bit-flipped second operand plus 1" — the reason NOT and ADD are both in the lineup).
+- Multiply or divide by powers of two (SHL doubles, SHR halves).
+- Combine bit fields with AND (mask out bits) and OR (set bits) and XOR (toggle bits).
+- Test whether two values are equal or which is larger (CMP).
+
+A single ALU-instruction byte is enough to do any of those operations on any pair of the four general-purpose registers. Already we have a CPU that can compute. The only thing missing is a way to get arbitrary numbers into the registers in the first place — which is exactly the next lesson, with the LOAD and STORE instructions. After that, the DATA instruction lets you put literal values directly into registers, and you'll have written your first complete program.

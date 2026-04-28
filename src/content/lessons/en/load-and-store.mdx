@@ -1,0 +1,71 @@
+---
+title: "LOAD and STORE"
+track: "it-basics"
+module: "hardware-basics"
+order: 22
+duration: 8
+prerequisites: ["alu-instructions"]
+objectives:
+  - "Describe what LOAD and STORE do: move a single byte between RAM and a CPU register"
+  - "Read the 8-bit format: 4-bit opcode (0000 = LOAD, 0001 = STORE), 2-bit register A (the address holder), 2-bit register B (the data source/destination)"
+  - "Combine ALU + LOAD + STORE in your head: read a byte from RAM, transform it, write the result back"
+components: ["LoadStoreCycle"]
+draft: false
+---
+
+import LoadStoreCycle from '../../../components/LoadStoreCycle.tsx';
+
+The ALU instructions you met last lesson can manipulate bytes in registers. But registers are tiny — there are only four general-purpose ones (R0 through R3), holding eight bits each. That is enough to do arithmetic on, but it is not enough to *store* anything substantial. A program with just registers can compute, but it cannot remember.
+
+The CPU's long-term memory is RAM. We built it back in Module 2: 256 bytes addressable by an 8-bit address. The CPU connects to RAM through MAR (the memory address register) and the bus, just like every other component. What we have not yet seen is the *instructions* that let a program move bytes between RAM and the registers. That is what LOAD and STORE are.
+
+The pair is symmetric:
+
+- **LOAD R*A*, R*B*** copies the byte at RAM address R*A* into register R*B*. Read direction.
+- **STORE R*A*, R*B*** copies the byte in register R*B* into RAM at address R*A*. Write direction.
+
+Notice the asymmetry inside the symmetry: in both instructions, register A is the *address holder*. It tells the CPU *where in RAM* to look or write. Register B is the *data*. The opcode (LOAD vs STORE) just says which way the byte flows.
+
+The 8-bit format reflects this:
+
+- **Bits 7–4 (the high nibble):** the opcode. `0000` for LOAD, `0001` for STORE. The two opcodes differ in just one bit — bit 4. Same wiring inside the chip; one extra wire decides direction.
+- **Bits 3–2:** register A — the address holder.
+- **Bits 1–0:** register B — the data source (for STORE) or destination (for LOAD).
+
+Compared to the ALU instruction format from last lesson — which started with bit 7 = 1 to signal "I am an ALU instruction" — LOAD and STORE both start with bit 7 = 0. Their high nibbles are `0000` and `0001`, both with the high bit clear. The CPU's control section uses bit 7 to fork the wiring at the highest level: ALU vs everything-else. Then it uses the rest of the high nibble to pick *which* non-ALU instruction.
+
+The execute phase is satisfyingly short. Both LOAD and STORE need only two execute steps:
+
+- **Step 4:** route the address (in regA) into MAR. The bus carries regA's value; MAR captures it. Now RAM knows where to look.
+- **Step 5:** for LOAD, enable RAM (its byte at MAR appears on the bus) and set regB (capturing the bus into the destination register). For STORE, enable regB (its value goes onto the bus) and set RAM (writing the bus into RAM[MAR]).
+- **Step 6:** empty. LOAD and STORE are simpler than ALU instructions; one fewer execute step is needed.
+
+<LoadStoreCycle client:load />
+
+The widget mirrors last lesson's ALU picker. Pick LOAD or STORE, pick the address-holding register, pick the data register, watch the byte update. The CPU diagram below it runs whatever instruction you constructed. The pre-loaded scene is set up so the chosen instruction does something visible:
+
+- For **LOAD**: regA gets the address 7, RAM[7] holds the value 99, regB starts at 0. After one cycle, regB will hold 99 — the byte was *fetched* from RAM.
+- For **STORE**: regA gets the address 5, regB holds the value 42. After one cycle, RAM[5] will hold 42 — the byte was *written* into RAM.
+
+Press Run and watch one full cycle play out. Notice how steps 1–3 are *exactly the same* as the ALU instructions from last lesson. The fetch is fetch — that is the design's gift to the programmer. Steps 4 and 5 are where LOAD and STORE diverge from each other and from ALU instructions, but only briefly. Step 6 is empty for both. Step 7 resets, ready for the next instruction.
+
+A few combinations worth trying:
+
+- **LOAD R0, R1** with the default scene: R1 ends at 99.
+- **LOAD R0, R0**: a self-load. R0 starts as the address (7), then gets overwritten with the value at that address (99). After the cycle, R0 = 99 — the original address is gone.
+- **STORE R0, R2**: writes R2 (= 42) into RAM[5]. Watch the RAM panel above the bus — cell 5 lights up after the STORE.
+- **STORE R0, R0**: a self-store. R0 holds the address; storing R0 to RAM[R0] writes the address itself into that address. After the cycle, RAM[5] = 5.
+
+### What we can build now
+
+With ALU + LOAD + STORE, the CPU can do real work for the first time:
+
+1. **Read** a byte from RAM into a register (LOAD).
+2. **Compute** with it using ALU instructions (ADD, AND, etc.).
+3. **Write** the result back to RAM (STORE).
+
+That three-step pattern — read, compute, write — is the heart of every computation a CPU does. Run it once and you have transformed one byte. Run it inside a loop, and you can transform millions of bytes. Modern programs are mostly enormous chains of this pattern, dressed up with control structures and abstractions.
+
+But there is still a missing piece. The widget above pre-populated the registers and RAM for you — R0 already held an address, R2 already held a value, RAM[7] already had data. In a real program, you can not assume that. The first thing any program has to do is *get arbitrary values into registers*. We do not have an instruction for that yet.
+
+That is the next lesson. The DATA instruction is special: it is the only two-byte instruction in the CPU's repertoire. The first byte says "load a literal into this register"; the second byte is the literal itself. With DATA, ALU, LOAD, and STORE, you can write your first complete program.

@@ -1,0 +1,47 @@
+---
+title: "Operations on Bytes"
+track: "it-basics"
+module: "hardware-basics"
+order: 15
+duration: 8
+prerequisites: ["module-2-recap"]
+objectives:
+  - "Name the eight byte-operations a CPU can do: ADD, shift right, shift left, NOT, AND, OR, XOR, compare"
+  - "Predict the output of each device for any pair of input bytes"
+  - "See that each device is just a black box for now — built from the same gates we already have, but treated at one level higher"
+components: ["ByteOperations"]
+draft: false
+---
+
+import ByteOperations from '../../../components/ByteOperations.tsx';
+
+Module 3 starts here. We are building the second half of a computer — the part that *does* things — and the first thing it has to be able to do is: take a byte (or two bytes) and produce a different byte. Transformation, with no memory of its own, no decision about what to do next. Just: bytes in, byte out.
+
+The good news is that we already have everything we need. Every device in this lesson is built from the gates from Module 1 — NAND, AND, OR, NOT, XOR — wired in patterns that operate on eight bits at a time instead of one. The wiring of any one device is intricate, but none of it is exotic. So I am going to introduce them as black boxes for now, focus on what each one *does*, and trust you to take it on faith that the inside is just gates. Later, if you want to peek under any of these lids, the wiring is in the book.
+
+There are eight devices. Three of them take a single byte as input. Five of them take two bytes. They all produce either a byte or a small set of flag bits. Here they are:
+
+- **ADD** — add two bytes as binary numbers. Produces a sum byte plus a carry-out flag (in case the sum is bigger than 255).
+- **SHR** — shift right. Move every bit one position toward the small end. The bit that falls off the right side is surfaced as a "shifted out" flag. The new top bit is 0.
+- **SHL** — shift left. Mirror image of SHR. The bit that falls off the left side comes out as the flag.
+- **NOT** — flip every bit. 0 becomes 1, 1 becomes 0. Single input.
+- **AND** — bit-wise and. Output bit `i` is 1 only if input bit `i` is 1 in *both* A and B.
+- **OR** — bit-wise or. Output bit `i` is 1 if input bit `i` is 1 in *either* A or B (or both).
+- **XOR** — bit-wise exclusive or. Output bit `i` is 1 if input bit `i` is 1 in *exactly one* of A and B, not both.
+- **CMP** — compare. The only device that does not produce a byte. It produces flag bits: are A and B equal? Is A larger? Is A smaller?
+
+Eight devices. The widget below shows them all at once. The two input bytes A and B are shared — every device is reading the same inputs, in parallel, all the time. There is no "select" yet, no choosing one over the others. Every device is computing its answer, every moment, from whatever A and B are showing right now.
+
+<ByteOperations client:load />
+
+Spend a minute flipping bits and watching outputs change. A few things worth noticing:
+
+- **AND, OR, and XOR are pure column-wise.** Look at any one column of the output and you can ignore the other seven columns entirely; that column's output bit depends only on that column's input bits. There is no carrying, no propagation, no left-to-right communication. Each bit position is its own little decision.
+- **ADD is not column-wise.** Try adding 0000 0001 to 0000 0001. You get 0000 0010. The carry from bit 0 propagates into bit 1. Try 1111 1111 + 0000 0001 — every bit cascades, the result is 0000 0000, and the carry-out flag turns on. Addition is the one operation in this lineup where the bits talk to each other across columns. (Internally the adder is built by chaining "full adders" — one per bit — that pass a carry along the chain. Same gates, more wiring.)
+- **SHR and SHL are not even doing arithmetic in the bit-fiddling sense.** They are just rerouting wires. Bit 5 of the output is wired directly to bit 6 (or bit 4) of the input, depending on direction. No gates compute anything; the device is essentially a bundle of wires permuted. But shifting right by one position is the same as dividing by two (for non-negative numbers), and shifting left by one is the same as multiplying by two. So a shifter built from rerouting alone is doing arithmetic for free.
+- **NOT is the simplest.** Eight inverters in parallel. That is the entire device.
+- **CMP is the strangest.** It does not produce a byte — it produces flag bits that say "yes, A equals B" or "yes, A is larger". You cannot take its output and feed it into another byte operation, because there is no byte to feed. CMP's job is to make a decision available to the *control* part of the CPU, which we will get to later in the module.
+
+Now imagine all eight of these devices wired up to the same two input buses, with their outputs tied together — but with only one device "enabled" onto the output bus at a time. A 3-bit selector picks which of the eight outputs is allowed through; the other seven sit silent. That single combined unit is called the **arithmetic-logic unit**, or **ALU**. It is the engine of the CPU. Every computation a computer does — every pixel rendered, every number summed, every comparison in every if-statement in every program ever written — flows through one of these eight operations, selected one at a time, executed in parallel.
+
+That is the next lesson. We are going to take the eight devices you just saw and stack them into a single box.

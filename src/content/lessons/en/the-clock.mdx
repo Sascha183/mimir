@@ -1,0 +1,64 @@
+---
+title: "The Clock"
+track: "it-basics"
+module: "hardware-basics"
+order: 17
+duration: 8
+prerequisites: ["the-alu"]
+objectives:
+  - "Describe what a clock is in a CPU: a single bit that flips on and off at a steady rate"
+  - "Explain why a single clock signal is not enough — and how clk_e and clk_s are derived to give the bus time to settle"
+  - "Read a timeline view of three signals and identify the moment when a register-to-register move actually captures"
+components: ["TheClock"]
+draft: false
+---
+
+import TheClock from '../../../components/TheClock.tsx';
+
+The ALU computes whatever its inputs ask of it, instantly, every moment. That's the problem.
+
+In a real CPU, the ALU sits on the same buses as a dozen registers, the RAM, and a control section. To make any actual work happen, several things must happen *in sequence*:
+
+1. Enable register R2 onto the input bus.
+2. Wait long enough for R2's eight bits to make their way through the wires and stabilize on the bus.
+3. Tell the ALU to read what's on the bus.
+4. Pulse the destination's set wire so it captures the ALU's output.
+
+If step 4 happens too soon — before step 2 has settled — the destination captures noise. If everything happens "at the same time," nothing reliable happens. The signals race each other and the result is whichever wave-front gets there first. This is one of the central problems of digital design, and the answer to it is *synchronization*. We need a referee.
+
+The referee is a single bit, called the **clock**, that flips between 0 and 1 at a steady rate. Real CPUs run their clocks at a billion or more flips per second; the cadence is what gives the chip its advertised speed ("3.2 GHz" means 3.2 billion clock pulses per second). On its own, the clock doesn't *do* anything — it just oscillates. But every other component in the CPU is wired to wait its turn based on what the clock is doing. The clock is the only thing in the chip that knows what time it is. Everything else takes its cue from the clock.
+
+But a single clock signal turns out not to be enough. To reliably move a byte from one register to another, we need *two* signals, slightly offset in time:
+
+- **clk_e** ("clock enable") goes high *first*. It tells the source register to put its byte onto the bus. We give the bus a moment for the eight bits to settle.
+- **clk_s** ("clock set") goes high *later*, after the bus has settled. It tells the destination register to capture whatever is on the bus right now.
+
+Both signals come back down to zero before the next cycle begins. The whole choreography happens in a single clock period, but the *staggering* — clk_e first, clk_s next — is the trick that makes it work.
+
+The way clk_e and clk_s are built is small and clever. We make a delayed copy of the clock — call it clk_d, where each transition happens one quarter-period later than clk. Then:
+
+- **clk_e = clk OR clk_d** — high whenever either is high. Its pulse is *wider* than clk, covering both the rising and falling edges.
+- **clk_s = clk AND clk_d** — high only when both are high. Its pulse is *narrower* than clk, landing in the middle.
+
+The widget below shows all three signals as a timeline. Each cell is one quarter of a clock period — so four cells make one full clock cycle. We're displaying four full cycles, sixteen cells in total. Press Start to watch the active position march left-to-right, looping back to the start when it gets to the end. The numbers in each cell are the signal's value (1 or 0) at that moment.
+
+<TheClock client:load />
+
+Slow the tick rate down to something like 1000 ms and watch what happens. The pattern that matters is the relationship between the three rows:
+
+- The **clk** row is the simplest: 0, 1, 1, 0, repeating. Each "1, 1" run is the high half of one clock cycle. (We discretized one period into four ticks rather than two so the offset construction has somewhere to land. Treat each tick as a quarter-period.)
+- The **clk_e** row is high for *three* out of every four ticks — wider than clk by one tick on each end. That widening is what gives the source register a head start (turning on slightly before clk does) and a tail (staying on slightly after clk falls), so the bus has time to settle before anything tries to read it.
+- The **clk_s** row is high for *one* tick out of every four — narrower than clk, landing right in the middle of clk_e's high window. That single tick is the moment when the destination register actually captures whatever is on the bus.
+
+The phase indicator below the timeline names what's happening at each tick:
+
+- **rest** — both clk_e and clk_s are off, the bus is undriven.
+- **enable rising** — clk_e just turned on; the source register is putting its byte on the bus, but the bus may still be settling.
+- **capture** — clk_e is still on (bus is settled), and clk_s is on too. The destination register latches the bus right now. *This is the moment when the byte actually moves.*
+- **enable falling** — clk_s has turned off but clk_e is still on. The destination has its byte; the source is still driving the bus, but no one is listening anymore. Then everything goes quiet for one tick (rest), and we start again.
+
+Without this stagger, register-to-register data movement wouldn't work. Two registers might both be enabled at once, or the destination might capture before the source had finished driving the bus. The clock and its derived signals are how the CPU keeps the choreography clean, billions of times per second.
+
+Now we have the heartbeat. Every cycle of the clock, an opportunity exists to move one byte between two registers (or between a register and RAM, or between a register and the ALU). But the CPU doesn't do the same thing every cycle — at any given moment, it's somewhere in the middle of a *sequence* of cycles that together make up a single instruction. To execute "add R2 and R3," for example, the CPU needs several cycles in coordinated order: first enable R2, then enable R3 with the ALU set to ADD, then write the result back. Different cycles of the clock do different things.
+
+The piece that *counts the cycles* and tells the rest of the CPU which cycle we're in — that's the next lesson. It's called the stepper.

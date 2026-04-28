@@ -1,0 +1,70 @@
+---
+title: "DATA — Your First Program"
+track: "it-basics"
+module: "hardware-basics"
+order: 23
+duration: 9
+prerequisites: ["load-and-store"]
+objectives:
+  - "Describe the DATA instruction's two-byte format and why it has to span two bytes"
+  - "Trace through the DATA recipe and see how IAR is incremented twice in one cycle so the next instruction skips past the data byte"
+  - "Run a real five-instruction program end-to-end and verify it produced the expected result in RAM"
+components: ["DataInstructionCycle"]
+draft: false
+---
+
+import DataInstructionCycle from '../../../components/DataInstructionCycle.tsx';
+
+We have ALU instructions for computation. We have LOAD and STORE for moving bytes between RAM and registers. There is still one missing piece: a way to put a *literal value* into a register. ADD R2, R3 needs R2 and R3 to already hold the numbers we want to add — but how did the numbers get there in the first place? With the instructions we have so far, we can not say "put the number 5 into R0." The number has to live somewhere first; it has to come from RAM, which means it has to have been written to RAM, which means *something* once put it there. Where does the chain start?
+
+The chain starts with the **DATA** instruction, and DATA is genuinely different from every other instruction in the CPU's repertoire. It is the only **two-byte** instruction. The first byte is the opcode itself: "the next byte is data; load it into register X." The second byte, which sits at RAM[IAR + 1] — the very next cell after the opcode — is the literal value to load.
+
+Why two bytes? Because there is no way to fit an arbitrary 8-bit value *inside* a single 8-bit instruction. The opcode and the destination register already eat into the byte; there is nowhere left to encode the literal. The simplest solution is to spill it into the next byte of RAM, knowing that fetch always runs in order. The CPU reads the opcode, sees DATA, knows to read one more byte, treats that byte as the literal value.
+
+The format of the opcode byte is small:
+
+- **Bits 7–4:** `0010`. The DATA opcode. Distinct from the ALU `1xxx` family, distinct from LOAD `0000` and STORE `0001`.
+- **Bits 3–2:** unused (kept at `00`).
+- **Bits 1–0:** the destination register (R0 through R3).
+
+The recipe is the most interesting one we have seen. The execute phase of DATA does *another fetch* — it reads RAM at IAR's current location and stashes the byte in the destination register, then advances IAR past the data byte:
+
+- **Step 4:** enable IAR onto the bus, set MAR (so RAM points at the data byte). Run IAR through the ALU's `+1` path and stash the incremented value in ACC. Same shape as fetch step 1.
+- **Step 5:** enable RAM (its byte at MAR appears on the bus), set the destination register. The literal is now in the register.
+- **Step 6:** enable ACC (which holds IAR + 1), set IAR. IAR has now been advanced *twice* this instruction cycle — once during fetch's normal advance, once again here to skip past the data byte. The next instruction cycle will fetch from two bytes later, exactly where the next *real* instruction starts.
+
+Two IAR advances in one cycle is the trick. Without it, the next fetch would land on the data byte (treating raw data as an instruction) and chaos would follow.
+
+<DataInstructionCycle client:load />
+
+The widget runs a real, five-instruction program. Read the listing carefully:
+
+1. **DATA R0, 5** — load the literal 5 into R0. Two bytes (opcode + 5).
+2. **DATA R1, 3** — load the literal 3 into R1. Two bytes (opcode + 3).
+3. **ADD R0, R1** — R1 = R0 + R1, overwriting R1 with 8. One byte.
+4. **DATA R0, 14** — load the literal 14 into R0. Two bytes (opcode + 14). 14 is the address where we will store the result.
+5. **STORE R0, R1** — write R1 (= 8) into RAM at address R0 (= 14). One byte.
+
+Eight bytes of program; one byte of result, deposited at address 14. The first thing this program does is *manufacture* its own data — it does not assume R0 and R1 have anything useful in them. By the end, RAM[14] holds 8, the sum of 5 and 3.
+
+Press **Step instruction** to advance one full cycle (= 7 stepper steps = one whole instruction). Watch the program listing's highlight move down the list as IAR advances. Watch the registers fill in. The first two steps are DATA instructions — pause to notice how step 5 of the cycle reads the data byte from RAM, and step 6 advances IAR by another byte so the next fetch lands cleanly on the next opcode.
+
+Step three (ADD R0, R1) is identical to what you saw in the ALU lesson, but now you can see it operating on values that were *put there by the program itself two cycles earlier*. This is the moment the program crosses the threshold from "demonstration" to "real software."
+
+After all five instructions complete, IAR is past the program, RAM[14] has the answer, and the CPU is fetching zeros from empty RAM (which decode to no-ops — the CPU keeps cycling through fetch + nothing + reset, forever, because there is no halt instruction in this design). Press Reset to start over.
+
+### What this demonstrates
+
+This program is small but it is a **real** program. It uses DATA to introduce literal values, ALU instructions to compute, and STORE to persist a result. Every step ran through the same fetch-execute cycle on the same hardware — no shortcuts, no special cases. Real software is mostly more of this same pattern. A web browser parsing HTML is doing something like:
+
+1. DATA: load the address of the next character.
+2. LOAD: read the character.
+3. ALU instructions: compare it to the bytes for `<`, ASCII letters, etc.
+4. STORE: save state to a structure in RAM.
+5. Loop back to step 1.
+
+The browser's program is a million bytes long instead of eight, and it runs at a billion cycles per second instead of once per Step click, but the architecture is the same. A program is a sequence of instructions in RAM. The CPU fetches them one at a time and executes each one.
+
+There is one feature missing, though, and it is the feature that makes everything actually interesting. Right now the CPU runs through instructions in *strict linear order* — IAR ticks up by one (or two for DATA), an instruction runs, IAR ticks up, the next instruction runs. There is no way to *go back* or to *skip forward*. No loops. No conditionals. The program runs once, top to bottom, and stops.
+
+The next lesson fixes that with the most important invention in computing: the **JUMP** instruction.

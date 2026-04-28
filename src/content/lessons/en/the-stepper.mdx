@@ -1,0 +1,61 @@
+---
+title: "The Stepper"
+track: "it-basics"
+module: "hardware-basics"
+order: 18
+duration: 9
+prerequisites: ["the-clock"]
+objectives:
+  - "Describe what the stepper produces: a single 'active' wire that advances by one position each clock period"
+  - "Identify the two halves of the stepper's cycle: fetch (steps 1-3, same for every instruction) and execute (steps 4-6, varies)"
+  - "Read a 28-tick timeline and spot the seven clk_s pulses that drive the seven step transitions"
+components: ["TheStepper"]
+draft: false
+---
+
+import TheStepper from '../../../components/TheStepper.tsx';
+
+The clock ticks. But on its own, the clock is featureless — just a steady metronome that says *now, now, now, now*. Every tick looks like every other tick. To turn that uniform beat into a **sequence**, we need something that counts the ticks and uses the count to direct different things to happen at different moments.
+
+That something is called the **stepper**. It is the second piece of the CPU's timing machinery, and it is what gives the CPU its sense of *what comes next*.
+
+The stepper is a small counter, built — like everything else — from the memory bits we already have. It has one input (the clock) and seven outputs, named step 1 through step 7. Its rule is the simplest rule in the chip:
+
+> Exactly one of the seven outputs is high at any moment, and the high output advances by one position each clock period. After step 7, it wraps back to step 1.
+
+Seven steps, one full lap, then start over. The stepper is constantly cycling. Every clock period — every roughly-one-nanosecond on a real chip — it ticks forward one position.
+
+Why seven? Because that's how many "moments" the CPU needs to execute one instruction. Look at what an instruction has to do, abstractly:
+
+1. Find out *which* instruction is next. (We need the instruction's address.)
+2. Fetch the instruction byte from RAM.
+3. Set up for the *next* instruction, so we'll be ready next time. (Bump the address counter.)
+4. Read the operands the instruction wants to work on.
+5. Do whatever the instruction says (an ALU operation, a memory read, a jump, etc).
+6. Stash the result somewhere.
+7. Reset and start over.
+
+Three steps to fetch the instruction. Three steps to execute it. One step to reset. Seven steps in total. The first three are the same for every instruction in the entire computer — *fetch* is fetch. The middle three vary depending on what the instruction is — adding two registers looks different from jumping to a new address. The last step is the wraparound that gets us back to step 1, ready for the next instruction.
+
+The stepper's job is to be the heartbeat that walks us through these seven moments, in order, over and over, forever. Every cell in the CPU watches the seven step wires and knows which step it should be doing what during. Step 3 might say to register R0: "now is when you read the bus and capture the new instruction." Step 5 might say to the ALU: "now is when you compute." The wiring between the stepper and everything else is what we'll cover next lesson — the *control section*. For now, the stepper is the stage manager calling out scene numbers; we'll meet the actors in a moment.
+
+<TheStepper client:load />
+
+The widget shows three rows. The top two are the clock signals from the previous lesson — the same `clk` that oscillates 0–1–1–0, and the same `clk_s` that pulses high for one tick in the middle of each clock period. They're the same signals you saw before. But this time the timeline is *longer*: 28 ticks instead of 16. That's seven full clock periods — exactly one complete lap of the stepper.
+
+The third row is the stepper itself. Seven cells, labeled `1` through `7`, with phase tags below: three for fetch, three for execute, one for reset. Exactly one cell is highlighted at any moment, and which one it is corresponds to the stepper's currently-active output wire.
+
+Press Start. Watch what happens at each clk_s pulse — the bright cell in the second row. Every time a clk_s pulse fires, the stepper advances by one position. Count along: clk_s fires, stepper goes 1 → 2. clk_s fires again, stepper goes 2 → 3. After seven clk_s pulses, the stepper has visited all seven steps; the timeline wraps back to tick 0 and the stepper is back at step 1, ready for the next instruction.
+
+Slow the rate down to 1000 ms and you can really watch each transition. Notice that within a single clock period — a single block of four timeline ticks — the stepper holds steady. The active step doesn't change during the period; it only changes *at the clk_s pulse*, the same pulse that captures any byte in motion on the bus. The stepper is built from memory bits, so of course it captures on clk_s, the same way any other register would. The stepper is, in fact, a special-purpose register configured to count.
+
+A few things to internalize before moving on:
+
+- **The stepper is a counter, but it's also seven separate output wires.** This is important. There's no "step number" wire; there are seven wires, six of them off and one of them on. Other parts of the CPU don't read a number — they read a wire. The control section (next lesson) wires up dozens of small AND gates, each one watching a specific step wire and producing a specific action when that step is the active one.
+- **Steps 1, 2, 3 are the same for every instruction.** This is the chip designer's gift to themselves — fetch is fetch is fetch, and only one set of wires has to handle it. Whether the next instruction is ADD or JUMP or LOAD, steps 1-3 do the same fetch sequence.
+- **Steps 4, 5, 6 are where the instruction actually gets executed.** During these three steps, the control section needs to vary its behavior based on what was fetched. ADD does one set of things; LOAD does a different set. We'll see how that branching works in the control section.
+- **Step 7 is the reset.** It's a single step at the end of every instruction that resets the stepper itself back to step 1, so the cycle can begin again. Sometimes this step also does small bookkeeping; mostly it just gets us ready for the next instruction.
+
+We now have the timing machinery of the CPU. The clock provides the heartbeat. The stepper turns that heartbeat into seven distinct moments per instruction, repeated forever. What we don't have yet is *the wiring that uses the steps to make things happen*. The seven step wires need to be connected, through a small forest of AND gates, to the enable and set inputs of every register, the ALU, and the RAM. That wiring — what to enable when, what to capture when — is the control section.
+
+That's the next lesson, and it's where the CPU finally becomes a CPU.

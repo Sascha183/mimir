@@ -1,0 +1,71 @@
+---
+title: "JUMP — The First Great Invention"
+track: "it-basics"
+module: "hardware-basics"
+order: 24
+duration: 9
+prerequisites: ["data-instruction"]
+objectives:
+  - "Describe what JMP and JMPR do: replace IAR with a new value, breaking the linear march of execution"
+  - "Read both encodings: JMP is two bytes (opcode + destination); JMPR is one byte (opcode + register holding the destination)"
+  - "Watch a loop run forever and explain why the program does not 'end' on its own"
+components: ["JumpInstructionsCycle"]
+draft: false
+---
+
+import JumpInstructionsCycle from '../../../components/JumpInstructionsCycle.tsx';
+
+The program from the last lesson did its work and stopped. It computed 5 + 3 and stored 8 to RAM[14], then IAR walked past the last byte of the program and the CPU started executing zeros — fetching nothing, doing nothing, cycle after cycle, forever. That is not a useful state to be in.
+
+The reason the program ended is that, until now, IAR has been a one-way ratchet. Every fetch advances IAR by one (or two for DATA), and nothing else changes IAR. The next instruction is always at IAR; once IAR walks past the program, there are no more instructions. *Linear* execution. No going back, no skipping ahead.
+
+Real programs are not linear. They have loops (do this thousand times), they have decisions (if A is bigger than B, do X; otherwise do Y), they have function calls (run this subroutine and come back). All of these require the program to *change which instruction comes next*. The mechanism for that, hardware-wise, is the **JUMP** instruction. JUMP is, with no exaggeration, one of the great inventions in computing — the difference between a tape-machine that runs once and stops and a true computer that can keep working.
+
+Conceptually, JUMP is trivial: it overwrites IAR with a new value. That's it. The next fetch comes from the new IAR. Whatever was at the old IAR is forgotten; whatever is at the new IAR runs next.
+
+This CPU has two flavors of jump:
+
+- **JMP \<addr\>** is unconditional and takes its destination from a *literal byte in RAM*. Like DATA, it is a two-byte instruction: the first byte is the opcode (`0100_0000`), and the second byte is the destination address. After the instruction runs, IAR holds the destination.
+- **JMPR R\<X\>** also unconditional, but the destination comes from a *register*. One byte (`0011_00_RB`). Whatever is in the named register becomes IAR's new value.
+
+Use JMP when the destination is known at write-time. Use JMPR when the destination is something you computed at runtime (like the address of a function loaded from memory, or a target inside a table). For lesson 24 the difference is mostly cosmetic — both end up writing IAR — but they show two different ways of thinking about "where does the next instruction live."
+
+The recipes are short. Both JMP and JMPR are essentially "set IAR from somewhere," with the difference being where the somewhere is.
+
+**JMP** does its trick across two execute steps:
+- Step 4: enable IAR (which currently points at the address byte, since fetch advanced past the opcode), set MAR. RAM is now pointing at the destination address.
+- Step 5: enable RAM (the destination address appears on the bus), set IAR. IAR now holds the destination. The next fetch will pull from there.
+- Step 6: empty.
+
+**JMPR** is even shorter:
+- Step 4: enable the register, set IAR. One step. IAR is now the value that was in the register.
+- Steps 5 and 6: empty.
+
+The widget below has two pre-loaded programs, each an infinite loop that increments R1 by 1 every iteration. The first uses JMP; the second uses JMPR. Pick one and press Run (slow it down with the rate slider if it goes too fast).
+
+<JumpInstructionsCycle client:load />
+
+A few things to watch for.
+
+**The loop never ends.** That is the point — and also a small panic. There is no "halt" instruction in this CPU. As long as power is on, the CPU is fetching and executing. To stop a real program, you have to either jump to a tight loop that does nothing useful (effectively a halt), or arrange for some external hardware to interrupt the CPU. We will see neither in this curriculum; for now, just internalize that a CPU never voluntarily stops.
+
+**Watch IAR snap backwards.** Every time the JMP fires, IAR changes from 5 (the JMP opcode address) to 4 (the loop body). In a non-jump instruction, IAR can only go up. Here it visibly goes back. That is the whole feature.
+
+**The program-listing highlight follows the loop.** After the JMP fires, the highlight returns to the ADD line. After ADD runs, the highlight moves to JMP. After JMP fires, back to ADD. Forever. The iteration counter at the top of the listing tracks how many times the loop body has run.
+
+**Try the JMPR variant.** It does the same thing, but the destination address (6) lives in R0 instead of next to the opcode in RAM. Computing addresses at runtime — which is what JMPR makes possible — is how programs implement function calls, dispatch tables, and dynamic dispatch in object-oriented languages. JMP is the bread and butter; JMPR is the secret ingredient.
+
+### What we have now
+
+Look at what the CPU can do, with just the instructions we have introduced:
+
+- DATA puts literal values into registers.
+- LOAD and STORE move bytes between RAM and registers.
+- ALU instructions compute (addition, comparison, bit operations).
+- JMP and JMPR redirect IAR to make the program go somewhere other than "the next byte".
+
+That is enough to write programs of unbounded length. Anything that takes a finite number of steps can, in principle, be coded with these instructions. We have a *Turing-complete enough* machine for any computation that doesn't require infinite memory.
+
+But the loops we have built are *unconditional*. They never stop. That is rarely what we want. Real programs need loops with stopping conditions: "keep adding until the sum exceeds 100" or "keep reading bytes until you hit a zero." For that, the jump needs to be *conditional* — the CPU has to look at something and decide whether to jump or not.
+
+The thing it looks at is the **flag register** — those four flag bits (Carry, Equal, A larger, Zero) the ALU has been quietly producing all along, but which we have not been using. Conditional jumps and the flag register are the next, and final, lesson on instruction families. After that, we will have a complete computer that can run arbitrary programs.

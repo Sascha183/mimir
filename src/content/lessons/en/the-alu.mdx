@@ -1,0 +1,55 @@
+---
+title: "The ALU"
+track: "it-basics"
+module: "hardware-basics"
+order: 16
+duration: 8
+prerequisites: ["byte-operations"]
+objectives:
+  - "Describe what the Arithmetic-Logic Unit is: eight byte-operations packaged in one box, with a 3-bit op-select"
+  - "Read an op-code: predict which operation is being run from the three op-select bits"
+  - "Identify the four flag bits the ALU produces: Carry, A>B, A=B, Zero"
+components: ["TheALU"]
+draft: false
+---
+
+import TheALU from '../../../components/TheALU.tsx';
+
+In the last lesson I introduced eight separate devices, each one operating on bytes. They were all sitting next to each other, all reading the same A and B, all producing their own answers in parallel. That's a useful pedagogical setup but it's not how a real CPU works. A real CPU does not need every operation's result every cycle; it needs *one* of them. A specific one, chosen at a specific moment, sent to a specific register over the bus.
+
+So we package the eight devices into one component. Wire all eight to the same input buses A and B; let all eight compute their answers continuously, in parallel, the way they were already doing. Then add a 3-bit selector — three wires going in — and a 3-to-8 decoder behind them, so that exactly one of the eight devices is *enabled* onto the output bus at any given moment. The other seven keep computing — they're cheap — but their outputs go nowhere. Only the one the selector points at reaches the world.
+
+That combined unit is called the **arithmetic-logic unit**, or **ALU**.
+
+It's the centerpiece of the CPU. Every computation flows through it. Every "+" in every program ever written, every if-comparison, every bit-twiddle — it all becomes "set the op-select to N, drive A and B onto the input buses, read the output one cycle later." The ALU is where the *doing* lives.
+
+<TheALU client:load />
+
+The widget is one black box. Three op-select switches at the top — bit 2 is the most-significant of the op code, bit 0 the least. With three bits you can name eight operations, which is exactly enough for the eight we have. The convention I'll use here (and that the book uses) is:
+
+- `000` → ADD
+- `001` → SHR
+- `010` → SHL
+- `011` → NOT
+- `100` → AND
+- `101` → OR
+- `110` → XOR
+- `111` → CMP
+
+You can flip the three switches to set the op-code as a binary number, or click any of the eight named buttons directly — both routes set the same three wires to the same values. They are the same control. Below the op-select are the two byte inputs A and B. When the active operation only uses A (NOT, SHR, SHL), the B card dims itself; B is still wired up internally, but the chosen device ignores it. Below the inputs is the single output byte and the four flag bits: Carry, A&nbsp;&gt;&nbsp;B, A&nbsp;=&nbsp;B, and Zero.
+
+A few things to try.
+
+Set the op to ADD. Put any A and B in. Watch the output byte be the sum, and watch the Carry flag turn on when the sum overflows past 255. (Try A=200, B=100 — the byte output is 44, because 200 + 100 = 300 = 256 + 44, and the Carry flag confirms that something fell off the top.)
+
+Set the op to AND, with A=1111 0000 and B=0000 1111. The output is 0000 0000 — they share no bits in common. Notice the Zero flag turns on, because the output byte is all zeros. The Zero flag is wired to a NOR of every output bit; it goes on whenever every output bit is off, regardless of which operation produced that output. It's the ALU's way of saying "the answer was nothing."
+
+Set the op to CMP. Put A=42, B=42. The byte output goes to all zeros (CMP doesn't produce a byte; the device's byte output is held at zero by convention). But the A&nbsp;=&nbsp;B flag turns on. Now change one bit of A. The flag goes off, and depending on which bit you changed, A&nbsp;&gt;&nbsp;B turns on. CMP is the only operation in the lineup whose answer is *not* in the output byte but in the flag bits.
+
+Notice that the flag bits are *always present*, regardless of the chosen operation. Carry only carries meaning during ADD; A&nbsp;&gt;&nbsp;B and A&nbsp;=&nbsp;B only carry meaning during CMP; Zero is meaningful for any operation that produces a byte. The wiring doesn't care which op is selected — every flag is computed every cycle. It's the *control section* of the CPU (which we'll meet in lesson 19) that decides which flag matters in which context.
+
+So look at what we've got. Two byte inputs, three control wires, one byte output, four flag bits. Inside the box: eight devices, parallel computation, one selected output. That's the ALU. It does not decide what to compute — that's somebody else's job. It does not remember anything — when the inputs change, the output changes immediately. It is purely transformation.
+
+But the ALU just *sits there*. It computes whatever its inputs ask of it, instantaneously, every moment. It has no sense of *what to do next*. Bytes flow in, byte flows out, and that's the whole story. To turn the ALU into a CPU, we need something that pushes it through a sequence of actions in coordinated steps over time. We need a heartbeat.
+
+That's the next lesson: the clock.
