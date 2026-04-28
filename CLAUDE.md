@@ -335,7 +335,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
 
 ### Module 2 lessons
 
-#### [ ] Lesson 9: From one bit to many — the byte
+#### [x] Lesson 9: From one bit to many — the byte (done) — built as `TheByte.tsx`, a custom state-machine widget. Eight `InputSwitch` toggles + a single Store button + an SVG visualizing the shared `s` wire. Inputs and stored byte are kept in a single combined `useState` so functional updates always see the latest inputs (avoids stale-closure bugs when state-changing events fire in quick succession). Decimal/binary readouts reflect `stored`, never `inputs`.
 - **Slug:** the-byte
 - **Order:** 9
 - **Duration:** 8 minutes

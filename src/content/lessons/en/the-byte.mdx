@@ -1,0 +1,40 @@
+---
+title: "From One Bit to Many — The Byte"
+track: "it-basics"
+module: "hardware-basics"
+order: 9
+duration: 8
+prerequisites: ["memory-bit"]
+objectives:
+  - "Understand why one memory bit isn't enough, and how multiple bits combine into a byte"
+  - "Recognize that all eight bits in a byte are written at the same instant via a shared 'set' wire"
+  - "Read the same byte three different ways: as bits, as a binary number, and as a decimal number"
+components: ["TheByte"]
+draft: false
+---
+
+import TheByte from '../../../components/TheByte.tsx';
+
+In the last lesson I built a memory bit. Two NANDs in a loop, two buttons, one stored bit. It can answer a single yes-or-no question: was the last thing you told me a 1, or a 0?
+
+That is barely useful. With one bit I cannot store a letter. I cannot store a color. I cannot count past one. Real computers need to store numbers, text, images, sound — millions of distinct things. So I need more bits. A *lot* more bits.
+
+The fix is simple, almost insultingly so: take many memory bits and put them next to each other. Eight memory bits in a row gives me 256 possible patterns — enough to label every letter of the alphabet, every digit, every punctuation mark, and still have room left over. Eight bits is the size that stuck. The book has a memorable line for it: a *bite* is a mouthful of food, a **byte** is the digital equivalent. From now on, when I say "byte", I mean exactly eight bits arranged side by side.
+
+But there is one new piece, and it is the whole point of this lesson. If I want to *use* eight bits as a single thing, I need to write to all eight at the same instant. Otherwise, halfway through writing, the byte would briefly be a mixture — partly the old value, partly the new. So I do not give each bit its own private "set" button. I share one set wire across all eight cells. One click, all eight captures, no in-between state.
+
+<TheByte client:load />
+
+Toggle the eight input switches at the top to whatever pattern you like. Watch the stored cells below — they do not change. Now press **Store**. The shared wire flashes blue, and at that instant all eight cells take on the values from the inputs. The byte's binary and decimal readouts update to match.
+
+Try a few patterns. Set the rightmost switch on, store, and the byte reads `0000 0001` — decimal 1. Set the leftmost switch on, store, and you get `1000 0000` — decimal 128. Set every switch on, store, and you get `1111 1111` — decimal 255. The byte can hold any of 256 distinct values, and which one it is depends on the pattern of bits.
+
+A few things worth noticing.
+
+**The order matters.** I draw the byte left-to-right with the highest-value bit on the left, just like you would write the decimal number "120": the 1 is worth more than the 2, which is worth more than the 0. The same idea applies here, but each position is worth twice the one to its right instead of ten times. Bit 0 (rightmost) is worth 1, bit 1 is worth 2, bit 2 is worth 4, then 8, 16, 32, 64, and finally bit 7 (leftmost) is worth 128. Add up the worths of every bit that is on, and that is the decimal value.
+
+**The same byte means different things in different contexts.** `0100 0001` is the number 65. It is also the letter "A" in the standard text encoding. It is also a particular shade of dark gray in an 8-bit grayscale image. The bits do not know what they mean — the meaning comes from whatever code we have agreed to use for that situation. We will return to this idea later when we look at how text and pictures are stored.
+
+**Why exactly eight?** Honestly, history. Early computers experimented with 4-bit, 6-bit, 7-bit, even 12-bit "bytes." Eight won because it is small enough to be cheap to build, big enough for one English character, and a clean power of two — which makes the arithmetic of multi-byte values (16-bit, 32-bit, 64-bit) tidy. Once enough hardware standardized on it, the rest of the world followed. Today, "byte" universally means eight bits.
+
+So now I can store a byte. But there is a new problem the moment I try to build something more interesting. The stored cells in the widget above always show their values — they are wired straight to the readout. In a real computer I will want lots of bytes in lots of places, and if all of them are always shouting their values onto shared wires at the same time, those wires will be a chaos of conflicting signals. I need a way to say *this* byte gets to talk now, the rest stay quiet. That is the next lesson.
