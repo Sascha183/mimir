@@ -384,7 +384,7 @@ Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
   - The book also points out: when you "copy" R1 to R4, R1 is unchanged — it's a copy, not a move. This is true at the hardware level even if programmers sometimes say "move R1 to R4" colloquially.
   - Closing tease: with bytes, registers, and a bus, we can store and move data. But how do we choose WHICH register to enable when we have many of them? That's the next idea — the decoder.
 
-#### [ ] Lesson 12: The decoder — choosing one of many
+#### [x] Lesson 12: The decoder — choosing one of many (done) — built as `TheDecoder.tsx`. A 2-to-4 decoder rendered as four labeled rows (`¬A·¬B`, `¬A·B`, `A·¬B`, `A·B`) → AND pill → output bulb. Toggle A/B; the matching row lights up, the rest dim. Avoided rendering 4-to-16 or 8-to-256 per the roadmap's "use abstraction" guidance — the lesson prose carries the scaling argument verbally.
 - **Slug:** the-decoder
 - **Order:** 12
 - **Duration:** 7 minutes

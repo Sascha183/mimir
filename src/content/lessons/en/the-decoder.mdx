@@ -1,0 +1,36 @@
+---
+title: "The Decoder — Choosing One of Many"
+track: "it-basics"
+module: "hardware-basics"
+order: 12
+duration: 7
+prerequisites: ["the-bus"]
+objectives:
+  - "Describe what a decoder does: take a small binary number and turn on exactly one of 2^N output lines"
+  - "Connect the decoder to addressing: a single number selects one register out of many"
+  - "Recognize that doubling the input width doubles the input wires but quadruples the addressable outputs"
+components: ["TheDecoder"]
+draft: false
+---
+
+import TheDecoder from '../../../components/TheDecoder.tsx';
+
+In the last lesson I built a bus and wired three registers up to it. The protocol was simple: turn on the source register's enable, pulse the destination register's set, the byte moves. But to do that I had to push three separate buttons myself — one enable per register. Three is fine for a demo. A real CPU has sixteen registers, sometimes thirty-two; main memory has thousands of addressable bytes. I cannot have one wire per register stretching all the way back to the brain of the chip. I would run out of room.
+
+I need a different approach. I need to be able to *name* a register with a small number — say, "register number 5" — and have the hardware translate that small number into a single "you specifically" signal aimed at exactly the right enable input. Many register names should fit into few wires; many target wires should be drivable from one short address.
+
+The component that does this conversion has a beautifully literal name: a **decoder**. It takes N input wires and produces 2^N output wires, of which **exactly one is on at any given moment** — the one whose number, in binary, matches the inputs. Two inputs select one of four. Three inputs select one of eight. Four inputs select one of sixteen. Eight inputs select one of two hundred and fifty-six.
+
+The trick — once you see it, it is hard to unsee — is that the decoder is just AND gates. One AND gate per output. Each AND gate is wired to a unique combination of the inputs and their inversions, so that exactly one of the 2^N possible input patterns turns it on. With two inputs A and B, the four ANDs are watching for ¬A·¬B (00), ¬A·B (01), A·¬B (10), and A·B (11). Whichever pattern A and B are currently showing, that AND lights up; the others stay off.
+
+<TheDecoder client:load />
+
+Toggle A and B and watch which row lights up. The active row's label tells you the pattern its AND is watching for, and the row index — read as a 2-bit binary number — is exactly the decimal value of (A, B) treated as the bits of an address. A=1, B=0 → row 2 (binary 10). A=1, B=1 → row 3 (binary 11).
+
+Two inputs is small enough to draw every gate. But this scales. With three inputs you would have eight rows; with four, sixteen; with eight, two hundred and fifty-six. The pattern is the same — one AND gate per row, watching for a unique combination of the inputs and their inversions. The widget cannot reasonably show 256 rows, but the structure is the same: every additional input bit doubles the number of selectable outputs while only adding one wire on the input side. That is an exponential payoff for a linear cost. It is the same exponential we saw way back when we counted what one bit, two bits, four bits could represent — exactly the same idea, applied here to *selection* instead of *value*.
+
+Why this matters for everything that comes next:
+
+A decoder is what turns an **address register** into a *selection signal*. Imagine eight wires going into a decoder: I write the binary number 5 into those wires (`0000 0101`), and the decoder turns on output number 5 out of 256 possible. That single output line is then used as the enable signal for one specific register out of 256. Suddenly I can address two hundred and fifty-six different storage locations using just eight wires for the address. That is the core mechanism of memory addressing.
+
+We are about to put it to work. The next lesson is the climax of this module: take a lot of registers, arrange them in a grid, point two decoders at the rows and columns, and you have built **RAM** — random-access memory. Any byte, any address, equal speed every time. The bus carries data. The decoder picks where the data goes. Together they are half a computer.
