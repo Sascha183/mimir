@@ -323,6 +323,145 @@ When working through these lessons in sequence, follow these rules:
   - The build breaks and the cause is unclear after one attempt to fix
 - **Don't ask for human input on:** styling tweaks, prose phrasing, hint wording, color choices, layout decisions. Make a reasonable choice and move on. The human will polish during review.
 
+## Curriculum roadmap — IT Basics, Module 2: From bits to RAM
+
+This module builds the "memory half" of the computer. We start with a single memory bit (which Module 1 ended with) and scale up: 8 bits become a byte, byte storage gets controlled access (the Enabler), Enabler + byte forms a Register, registers connect via a Bus, decoders select among many registers, and finally many registers in a grid plus an address register form RAM.
+
+Pedagogically, Module 1 was about "what is a thing." Module 2 is about "what happens when many things work together." Less individual gate logic, more about systems, addressing, and the elegance of composition. Visual abstraction matters more here — at some point we stop drawing every NAND and start drawing higher-level building blocks.
+
+Module 2 ends WITHOUT the CPU. The CPU (ALU, control unit, instructions, machine language) is Module 3. Splitting them keeps each module's cognitive load reasonable.
+
+Status legend: `[x]` done, `[ ]` todo, `[~]` in progress
+
+### Module 2 lessons
+
+#### [ ] Lesson 9: From one bit to many — the byte
+- **Slug:** the-byte
+- **Order:** 9
+- **Duration:** 8 minutes
+- **Prerequisites:** ["memory-bit"]
+- **Pedagogical insight:** A single memory bit can hold one yes/no answer. To represent something more interesting (a number, a letter, a color), we put eight bits side by side. They share a single "set" wire, so all eight capture their inputs at the same instant. This is a byte. The book frames this with a memorable image: "a bite is a mouthful, a byte is the digital equivalent."
+- **Component pattern:** Custom widget (NOT GuidedBuilder). Visual representation of 8 memory bits in a row, sharing a "set" line. Learner can: click 8 input switches to set values, press a single "store" button (the shared 's' wire) to capture all of them simultaneously, see the byte's stored value displayed in three forms — as 8 bits visually, as a binary string ("0010 1101"), and as a decimal number (45).
+- **Key visual moment:** When the learner clicks "store", all 8 bits flash/animate at the same instant — emphasizing the "atomic" nature of byte writes.
+- **Lesson body should cover:**
+  - Reframe from Module 1: we built a single memory bit. But one bit is barely useful — it can only answer one yes/no question.
+  - The trick: take 8 of them, line them up, share their "set" wire. Now one click captures 8 bits at once.
+  - Why exactly 8? It's a historical convention — small enough to be cheap to build, big enough to be useful (256 possibilities means we can represent every letter of the alphabet, every number 0-255, and a lot more besides). The book explains this lightly — keep it light too.
+  - Demonstrate the widget. Encourage the learner to set various patterns and observe the decimal interpretation update.
+  - Brief note: the order of bits in a byte matters — it gives us a code (binary number code). We'll explore that more in the next lesson.
+  - Closing tease: but storing a byte is half the battle. We also need to control WHEN it gets used — when we let it out and when we keep it private. That requires one more idea.
+
+#### [ ] Lesson 10: Controlling access — the Enabler and the Register
+- **Slug:** the-register
+- **Order:** 10
+- **Duration:** 8 minutes
+- **Prerequisites:** ["the-byte"]
+- **Pedagogical insight:** A byte alone is "always on" — its outputs are always visible to whatever's connected. In a real computer, we need to control when a byte's contents are exposed to the rest of the system. The Enabler (8 AND gates with a shared "enable" line) does this: when "enable" is on, the byte passes through; when off, the outputs are forced to zero. Combine a byte with an Enabler, and you have a Register — the building block of all CPU storage. The book makes a lovely point here: the word "gate" finally makes sense. An enabler is literally a gate that opens and closes.
+- **Component pattern:** Custom widget extending the byte widget from Lesson 9. Show: a byte (from previous lesson, simplified) → an Enabler (8 AND gates visible, then collapsible to a "block" view) → output. The learner has TWO controls now: set bit (write to byte) and enable bit (let the byte's contents through to the output). Demonstrate the four operational states: byte empty + enable off, byte empty + enable on, byte stored + enable off (output is all zeros even though byte holds data!), byte stored + enable on (output reveals the data).
+- **Key visual moment:** When the learner toggles "enable" with a stored byte, the output bits visibly switch between "0000 0000" and the actual stored value. This is the moment that "controlled access" clicks.
+- **Lesson body should cover:**
+  - Recap the byte — but point out a problem. A byte's outputs are always on. If 8 bytes are all hooked up to the same wires, all 8 try to drive those wires at once. Conflict. We need a way to say "only one byte talks at a time."
+  - Introduce the Enabler. Show the wiring: 8 AND gates, all sharing one "enable" wire on their second input. When enable is off, no AND gate can output 1, so the entire byte is muted. When enable is on, every bit passes through.
+  - The combined unit (byte + enabler) is called a Register. The "R" abbreviation will appear in every diagram from now on.
+  - Demonstrate the widget. Walk through the four states described above.
+  - Why this matters: this is how the CPU has multiple working bytes (R0, R1, R2, etc.) all sharing the same wires without interfering with each other. Only one register is "enabled" at any given moment.
+  - Closing tease: now that we can mute and unmute registers, we can connect many of them to the same shared wire — a Bus.
+
+#### [ ] Lesson 11: The Bus — moving data
+- **Slug:** the-bus
+- **Order:** 11
+- **Duration:** 9 minutes
+- **Prerequisites:** ["the-register"]
+- **Pedagogical insight:** A bus is just 8 shared wires that connect multiple registers. To move data from R1 to R4, you turn on R1's enable bit (R1's contents now appear on the bus) and pulse R4's set bit (R4 captures whatever is on the bus). The data was "copied", not "moved" — it still exists in R1. The bus is bidirectional: any register can write to or read from it. The only rule: never enable two registers onto the bus at the same time, or their outputs conflict.
+- **Component pattern:** Custom widget showing 4-5 registers connected to a horizontal bus. Each register has visible "enable" and "set" buttons. The bus itself shows a live byte value (whatever's currently being driven onto it, or "—" if nothing). The learner can: store different values into different registers (using set), then perform copy operations (enable source register, pulse destination register's set). The widget visualizes the data flowing across the bus with a brief animation.
+- **Special interactive moment — the conflict warning:** If the learner tries to enable two registers simultaneously, the widget shows a clear error state: bus turns red, message appears: "Two registers are trying to talk at once. The bus only works when one register is enabled at a time." This makes the rule visceral.
+- **Lesson body should cover:**
+  - Introduce the problem: I have R1, R2, R3, R4. I want to copy a byte from R1 to R4. How?
+  - Solution: connect them all to the same 8 wires. Call those wires "the bus."
+  - The protocol: enable source, pulse destination's set. Bus carries the byte from one to the other for one moment. Done.
+  - Crucial rule: only one register enabled at a time. Demonstrate the conflict in the widget.
+  - The bus is the highway of the CPU. The CPU's job is essentially: move bytes between registers via the bus, sometimes transforming them along the way.
+  - The book also points out: when you "copy" R1 to R4, R1 is unchanged — it's a copy, not a move. This is true at the hardware level even if programmers sometimes say "move R1 to R4" colloquially.
+  - Closing tease: with bytes, registers, and a bus, we can store and move data. But how do we choose WHICH register to enable when we have many of them? That's the next idea — the decoder.
+
+#### [ ] Lesson 12: The decoder — choosing one of many
+- **Slug:** the-decoder
+- **Order:** 12
+- **Duration:** 7 minutes
+- **Prerequisites:** ["the-bus"]
+- **Pedagogical insight:** A decoder takes N input bits and turns on exactly one of 2^N output wires — corresponding to the binary value of the inputs. With 2 input bits we can select 1 of 4 outputs; with 3 inputs, 1 of 8; with 8 inputs, 1 of 256. This is how a CPU points at exactly one register or memory location: the decoder takes a binary "address" and activates the corresponding wire. It's elegant, and it's the bridge between binary numbers (Lesson 2) and addressing.
+- **Component pattern:** GuidedBuilder OR custom widget — author's choice. Either way, show: input bits on the left (start with 2-bit decoder, then expand to 3-bit), decoder logic in the middle (AND gates with various NOT'd inputs), output wires on the right with only one lighting up at a time. Learner toggles input bits, watches the active output change.
+- **Recommended approach:** Custom widget. Show a 2x4 decoder first (manageable visualization), then a "now imagine 256 of these" abstraction for the larger case. Don't try to render a 4-to-16 or 8-to-256 decoder fully — it would be overwhelming. The point is the principle, not the wiring.
+- **Lesson body should cover:**
+  - The problem: I have 4 registers but only one bus. How does the CPU choose which one to enable?
+  - The naive solution: 4 separate "enable" wires, one per register. The CPU sets the right one. Works, but doesn't scale — for 256 RAM locations, 256 wires.
+  - The decoder: turn a small binary number (the "address") into a large 1-of-N selection. With 8 input bits we can pick one of 256 outputs.
+  - Demonstrate the 2-to-4 decoder in the widget. Toggle inputs (00, 01, 10, 11), see which output lights up.
+  - Connect to addressing: this is exactly how memory addressing works. Put a number into an address register, the decoder turns that number into "select this one byte out of 256."
+  - Closing tease: now we have all the pieces — bytes, registers, bus, decoder. Time to put them together into the most important storage system in any computer: RAM.
+
+#### [ ] Lesson 13: Random Access Memory
+- **Slug:** ram
+- **Order:** 13
+- **Duration:** 12 minutes
+- **Prerequisites:** ["the-decoder"]
+- **Pedagogical insight:** RAM is built from 256 registers arranged in a 16×16 grid, plus a Memory Address Register (MAR) that selects which one is active. Two 4-to-16 decoders (one for the row, one for the column) intersect at exactly one cell — that's the selected register. The "random access" in RAM means: any byte can be read or written in equal time, regardless of where it is in the grid. This is the second half of the computer (the first half being the CPU, which we'll build in Module 3).
+- **Component pattern:** Custom widget. This is the climax of Module 2 and deserves a polished visualization. Show: the MAR on the left (8 input bits, displayed as binary AND decimal), two decoders feeding into a 16×16 grid (don't try to render every register — show a stylized grid with the selected cell highlighted), bus + set/enable controls at the bottom. Learner can: type or click an address into the MAR, watch the grid highlight the corresponding cell, read or write that cell with the bus.
+- **Suggested simplifications for the widget:**
+  - Don't render 256 individual registers visually — that's overwhelming. Render a stylized 16×16 grid where each cell is small (~20px), the selected cell is brightly highlighted, and clicking on the grid is one way to set the MAR.
+  - Provide both an address input (MAR) and a "current contents" display side by side, so the learner can see "address 42 holds the value 0010 1101 (45)".
+  - Allow the learner to write to several addresses, then come back and read them — proving that data persists per address.
+- **Lesson body should cover:**
+  - The vision: a computer needs to remember thousands of bytes — programs, data, the current state of everything. We're going to build storage for 256 bytes (small for real computers, plenty for our learning purposes).
+  - The architecture: take 256 registers, arrange them in a 16×16 grid. Use two decoders (one for the row, one for the column) — at any moment, only one row line is active and one column line is active. The single register at their intersection is "selected."
+  - Selection happens via the Memory Address Register (MAR). Put a number 0-255 into MAR. The first 4 bits drive the row decoder, the last 4 bits drive the column decoder. One cell is selected. That cell's set/enable wires are now wired up to the bus.
+  - Demonstrate the widget: write a value, change the address, write a different value, change back, read the first value. The data is there, untouched.
+  - Why "random access": unlike a tape or a queue, you can jump to any address instantly. Address 0, then address 200, then address 73 — same speed each time. This property is so important it gave the technology its name.
+  - The big reveal: this is half a computer. We have storage. The other half — the part that does things with stored data — is the CPU. That's Module 3.
+  - Closing for Module 2: pause and reflect. We've gone from a single memory bit (could remember one yes/no) to RAM (can remember 256 different things, each one a byte, each one accessible in any order). The leap is enormous, and yet every part of it was built from gates the learner constructed in Module 1. Nothing new was added at the bottom. The complexity emerged from arrangement.
+
+### Closing reflection lesson — optional but recommended
+
+#### [ ] Lesson 14: What we have so far (a pause)
+- **Slug:** module-2-recap
+- **Order:** 14
+- **Duration:** 5 minutes
+- **Prerequisites:** ["ram"]
+- **Pattern:** Pure prose — no interactive widget needed. A reflective pause before the heavy lift of Module 3 (the CPU).
+- **Body should:**
+  - Survey the journey so far. Module 1: gates from a single NAND. Module 2: storage from those gates.
+  - Make an explicit promise: Module 3 will build the other half — the part that DOES things. The CPU. ALU. Instructions. The thing that takes the data sitting in RAM and turns it into a running program.
+  - Note that we're now standing on the boundary between "static structures" (what we've built) and "dynamic behavior" (what's coming). Computers, fundamentally, are about that combination — memory plus a thing that operates on memory, repeated billions of times per second.
+  - Brief author's note about pacing: if Module 1 was concrete and tactile, Module 2 was about composition. Module 3 will be about choreography — many parts dancing in coordinated steps. Different in feel, but built on everything we've already learned.
+  - Tease Module 3.
+
+### Notes for autonomous building
+
+#### Visual abstraction matters
+By Lesson 11 (the bus), the CircuitCanvas with individual NAND gates becomes too cluttered. Module 2 lessons will use higher-level visualizations:
+- Bytes shown as 8 bits in a row, not 32 NAND gates
+- Registers shown as a single labeled box, not their internal byte+enabler
+- Buses shown as a thick line with byte values displayed
+- RAM shown as a stylized grid, not 256 individual register boxes
+
+This is intentional. The lessons explicitly note "we're not drawing every gate anymore — we're zooming out" so the abstraction is a teaching point, not a hidden simplification.
+
+#### Components are mostly custom, not GuidedBuilder
+Module 2 has fewer "build the circuit yourself" lessons. Most lessons demonstrate a fixed structure (a byte, a register, RAM) and let the learner manipulate inputs and observe outputs. GuidedBuilder is overkill when there's nothing to construct. Use the existing custom-widget pattern from MemoryBit as the model.
+
+#### Simulator extension may not be needed
+The Module 2 widgets are mostly state-machine-style (bytes, registers, RAM cells with set/enable inputs). Most can be implemented with plain React useState — they don't need the gate-level simulator. Only fall back to extending src/lib/gates/simulator.ts if a widget genuinely benefits from gate-accurate simulation.
+
+#### Pedagogical decisions that need human judgment
+Stop and ask if any of these come up:
+- Whether to actually render the 4-to-16 or 8-to-256 decoder gates, or use the abstraction approach (recommend abstraction)
+- Whether the RAM widget should let the learner type addresses or click on the grid (recommend both)
+- Whether Lesson 14 (the recap) is worth building or feels filler-y (author can decide based on how the rest reads)
+- Anything about codes, ASCII, or binary number representation — the book has more material here, and we may want a Lesson 9.5 or 12.5 specifically about codes. But the current plan rolls "binary numbers" into Lesson 9 lightly. If it feels rushed, propose a separate codes lesson.
+
+#### Don't build Module 3
+Module 3 (the CPU) is its own scope. After Lesson 14 (or Lesson 13 if 14 is skipped), STOP. Do not start the CPU. The learner should hit a clear "End of Module 2 — Module 3 coming soon" boundary, ideally with a "Coming soon" track entry visible in the IT Basics overview.
+
 ---
 
 ## Out of scope (don't propose these without being asked)
