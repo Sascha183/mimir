@@ -54,7 +54,9 @@
       "Bash(curl -s http://localhost:4321/lessons/memory-bit)",
       "Bash(curl *)",
       "Bash(kill 820)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(kill 914)"
     ]
   }
 }

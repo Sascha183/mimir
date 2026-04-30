@@ -631,14 +631,13 @@ export default function CircuitEditor({
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="not-prose mx-auto my-12 w-full max-w-[920px] text-apple-text">
+    <div className="not-prose mx-auto my-12 w-full max-w-[760px] text-apple-text">
       <p className="sr-only">
         Interactive circuit builder — visual interaction required. The current
-        circuit&rsquo;s truth table is shown to the right of the canvas (or
-        below it on smaller screens).
+        circuit&rsquo;s truth table is shown below the canvas.
       </p>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <Palette
           gates={availableGates}
           enabled={allowAddGates}
@@ -979,13 +978,13 @@ export default function CircuitEditor({
               </button>
             </div>
           </div>
-        </div>
 
-        <SidePanel
-          live={liveTruthTable}
-          target={targetTruthTable}
-          solved={isSolved}
-        />
+          <TruthTablesPanel
+            live={liveTruthTable}
+            target={targetTruthTable}
+            solved={isSolved}
+          />
+        </div>
       </div>
     </div>
   );
@@ -1186,7 +1185,7 @@ function PendingWireGhost({
   );
 }
 
-function SidePanel({
+function TruthTablesPanel({
   live,
   target,
   solved,
@@ -1195,38 +1194,43 @@ function SidePanel({
   target?: TruthTable;
   solved: boolean;
 }) {
+  // Live and Target sit side-by-side in a horizontal row. Each is capped at
+  // a sensible width so the tables don't stretch absurdly wide; the row
+  // centers within the canvas column. Below them, the verification status.
   return (
-    <div className="w-full space-y-4 lg:sticky lg:top-4 lg:w-[160px] lg:flex-shrink-0">
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-            Live
-          </h3>
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-apple-text-secondary">
-            <span
-              aria-hidden="true"
-              className="inline-block h-1.5 w-1.5 rounded-full bg-apple-blue"
-            />
-            updating
-          </span>
+    <div className="mt-3 flex flex-col gap-3">
+      <div className="flex flex-wrap items-start gap-6">
+        <div className="min-w-[140px] flex-1">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+              Live
+            </h3>
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-apple-text-secondary">
+              <span
+                aria-hidden="true"
+                className="inline-block h-1.5 w-1.5 rounded-full bg-apple-blue"
+              />
+              updating
+            </span>
+          </div>
+          <TruthTableDisplay table={live} />
         </div>
-        <TruthTableDisplay table={live} />
-      </div>
 
-      {target && (
-        <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-            Target
-          </h3>
-          <TruthTableDisplay table={target} />
-        </div>
-      )}
+        {target && (
+          <div className="min-w-[140px] flex-1">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+              Target
+            </h3>
+            <TruthTableDisplay table={target} />
+          </div>
+        )}
+      </div>
 
       {target && (
         <div
           className={`rounded-md p-2 text-xs ${
             solved
-              ? 'bg-green-50/60 text-apple-text'
+              ? 'bg-green-50/60 text-apple-text dark:bg-green-900/20'
               : 'bg-transparent text-apple-text-secondary'
           }`}
         >
