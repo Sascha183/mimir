@@ -36,3 +36,5 @@ The palette has AND, OR, and NOT. Notice what is missing: NAND. From this lesson
 <XorFromPrimitives client:load />
 
 So far every gate has been about computation — taking inputs and producing outputs. The next lesson breaks something that has felt like a rule the whole time: every output depends only on the current inputs. What if a gate could remember? That is where things get strange — and that is where computers get their memory.
+
+A heads-up about the next lesson, since this lesson made a point of putting NAND aside: in lesson 8, NAND comes back. Not because we have abandoned the "compose with what you have built" principle, but because *memory*, it turns out, is most economically built at the primitive level — two raw NANDs in a feedback loop. There is no contradiction. The right rule is "use the right level of abstraction for the job." For computation, that meant climbing up to AND, OR, and NOT. For memory, it means dropping back down to NAND. Both are correct moves at different times, and real chip designers do exactly the same thing.

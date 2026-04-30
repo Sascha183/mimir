@@ -30,16 +30,24 @@ interface Props {
   allowDelete?: boolean;
   allowEditWires?: boolean;
   targetTruthTable?: TruthTable;
+  /**
+   * Optional fully-wired solution. When provided, a "Show solution" button
+   * appears next to Reset; clicking it (after confirmation) replaces the
+   * current circuit with this one. The learner can keep editing afterwards.
+   */
+  solutionCircuit?: Circuit;
   onSolved?: () => void;
   storageKey: string;
 }
 
 // ─── Layout constants ───────────────────────────────────────────────────────
-// Match CircuitCanvas's geometry so circuits look identical between editor
-// and read-only display.
+// SVG coordinate space. The actual rendered size is responsive (CSS scales
+// the SVG via viewBox), but internal coordinates always speak in these units.
 const CANVAS_W = 568;
 const CANVAS_H = 368;
-const FRAME_PAD = 16;
+const FRAME_PAD = 16; // padding inside the bordered frame, in SVG units
+const FRAME_W = CANVAS_W + FRAME_PAD * 2; // 600
+const FRAME_H = CANVAS_H + FRAME_PAD * 2; // 400
 
 const INPUT_WIDTH = 64;
 const INPUT_TOTAL_HEIGHT = 48;
@@ -49,7 +57,7 @@ const EDGE_PADDING = 12;
 
 const GRID = 20; // gate positions snap to this on drop / drag-end
 const PORT_R = 5;
-const PORT_HIT_R = 9;
+const PORT_HIT_R = 14; // bigger hit area for finger taps
 
 // Two gates count as "overlapping" if their centers are within these
 // distances. The gate body is ~32x32; this leaves a small breathing margin.
@@ -61,8 +69,9 @@ const MIN_GAP_Y = 32;
 const PLACEMENT_MARGIN_X = 100;
 const PLACEMENT_MARGIN_Y = 40;
 
-// MIME type for HTML5 drag-and-drop from the palette.
-const PALETTE_MIME = 'application/x-hciw-gate-kind';
+// Drag threshold in SVG units — pointer needs to move this far before a
+// gesture is treated as a drag (rather than a tap-to-select).
+const DRAG_THRESHOLD = 4;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -184,6 +193,7 @@ export default function CircuitEditor({
   allowDelete = true,
   allowEditWires = true,
   targetTruthTable,
+  solutionCircuit,
   onSolved,
   storageKey,
 }: Props) {
@@ -211,6 +221,7 @@ export default function CircuitEditor({
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<{
+    pointerId: number;
     gateId: string;
     startSvg: { x: number; y: number };
     gateStart: { x: number; y: number };
@@ -378,25 +389,20 @@ export default function CircuitEditor({
     return groups;
   }, [circuit.wires]);
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
-
-  // Drag-from-palette: drop a new gate on the canvas.
-  function handleDragOver(e: React.DragEvent) {
+  // ─── Adding gates from the palette ───────────────────────────────────────
+  // A single tap on a palette item adds a gate at a free spot near the
+  // canvas center. This is the touch-friendly path. On desktop the same
+  // click works; the legacy HTML5 drag-and-drop has been removed since it
+  // never worked on touch and is now redundant.
+  function addGateFromPalette(kind: GateKind) {
     if (!allowAddGates) return;
-    if (!e.dataTransfer.types.includes(PALETTE_MIME)) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    if (!allowAddGates) return;
-    const kind = e.dataTransfer.getData(PALETTE_MIME) as GateKind;
-    if (!kind || !availableGates.includes(kind)) return;
-    e.preventDefault();
-    const pt = screenToSvg(e.clientX, e.clientY);
-    const desired = clampToBounds({ x: snap(pt.x), y: snap(pt.y) });
+    if (!availableGates.includes(kind)) return;
     const id = makeId();
     setCircuit((prev) => {
+      const desired = clampToBounds({
+        x: snap(CANVAS_W / 2),
+        y: snap(CANVAS_H / 2),
+      });
       const free = findFreePosition(prev.gates, null, desired);
       const newGate: GateInstance = { id, kind, position: free };
       return { ...prev, gates: [...prev.gates, newGate] };
@@ -404,75 +410,76 @@ export default function CircuitEditor({
     setSelected({ kind: 'gate', id });
   }
 
-  // Drag an existing gate. Mousedown starts a tentative drag; movement past
-  // a small threshold commits to drag; otherwise mouseup is treated as click.
-  function handleGateMouseDown(e: React.MouseEvent, gateId: string) {
-    if (e.button !== 0) return;
+  // ─── Gate dragging via pointer events (works for mouse, touch, pen) ──────
+  function handleGatePointerDown(e: React.PointerEvent, gateId: string) {
+    if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') {
+      return;
+    }
     e.stopPropagation();
     const gate = circuit.gates.find((g) => g.id === gateId);
     if (!gate) return;
     const pt = screenToSvg(e.clientX, e.clientY);
     dragRef.current = {
+      pointerId: e.pointerId,
       gateId,
       startSvg: pt,
       gateStart: { ...gate.position },
       moved: false,
     };
+    // Capture the pointer so move/up events keep firing even if it leaves
+    // the gate's hit area.
+    (e.target as Element).setPointerCapture?.(e.pointerId);
   }
 
-  useEffect(() => {
-    function onMove(e: MouseEvent) {
-      const d = dragRef.current;
-      if (!d) return;
-      const pt = screenToSvg(e.clientX, e.clientY);
-      const dx = pt.x - d.startSvg.x;
-      const dy = pt.y - d.startSvg.y;
-      if (!d.moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
-      d.moved = true;
+  function handleGatePointerMove(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (!d || d.pointerId !== e.pointerId) return;
+    const pt = screenToSvg(e.clientX, e.clientY);
+    const dx = pt.x - d.startSvg.x;
+    const dy = pt.y - d.startSvg.y;
+    if (!d.moved && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) {
+      return;
+    }
+    d.moved = true;
+    setCircuit((prev) => ({
+      ...prev,
+      gates: prev.gates.map((g) =>
+        g.id === d.gateId
+          ? {
+              ...g,
+              position: { x: d.gateStart.x + dx, y: d.gateStart.y + dy },
+            }
+          : g,
+      ),
+    }));
+  }
+
+  function handleGatePointerUp(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (!d || d.pointerId !== e.pointerId) return;
+    if (d.moved) {
       setCircuit((prev) => ({
         ...prev,
-        gates: prev.gates.map((g) =>
-          g.id === d.gateId
-            ? {
-                ...g,
-                position: { x: d.gateStart.x + dx, y: d.gateStart.y + dy },
-              }
-            : g,
-        ),
+        gates: prev.gates.map((g) => {
+          if (g.id !== d.gateId) return g;
+          const desired = clampToBounds({
+            x: snap(g.position.x),
+            y: snap(g.position.y),
+          });
+          const free = findFreePosition(prev.gates, d.gateId, desired);
+          return { ...g, position: free };
+        }),
       }));
+    } else {
+      // Tap → select.
+      setSelected({ kind: 'gate', id: d.gateId });
     }
-    function onUp() {
-      const d = dragRef.current;
-      if (!d) return;
-      if (d.moved) {
-        setCircuit((prev) => ({
-          ...prev,
-          gates: prev.gates.map((g) => {
-            if (g.id !== d.gateId) return g;
-            const desired = clampToBounds({
-              x: snap(g.position.x),
-              y: snap(g.position.y),
-            });
-            const free = findFreePosition(prev.gates, d.gateId, desired);
-            return { ...g, position: free };
-          }),
-        }));
-      } else {
-        // Treat as click → select this gate.
-        setSelected({ kind: 'gate', id: d.gateId });
-      }
-      dragRef.current = null;
-    }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, []);
+    dragRef.current = null;
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+  }
 
   // Wire creation by clicking a source port, then a destination port.
-  function handlePortClick(e: React.MouseEvent, ref: PortRef) {
+  function handlePortClick(e: React.MouseEvent | React.PointerEvent, ref: PortRef) {
     e.stopPropagation();
     if (!allowEditWires) return;
 
@@ -537,8 +544,35 @@ export default function CircuitEditor({
     setCursorSvg(screenToSvg(e.clientX, e.clientY));
   }
 
+  // Delete the currently selected gate or wire. Wired up to:
+  //   - Delete / Backspace key
+  //   - The visible "Delete" button (touch users have no keyboard)
+  function deleteSelected() {
+    if (!allowDelete) return;
+    if (!selected) return;
+    if (selected.kind === 'gate') {
+      const gid = selected.id;
+      setCircuit((prev) => ({
+        ...prev,
+        gates: prev.gates.filter((g) => g.id !== gid),
+        wires: prev.wires.filter((w) => {
+          if ('gateId' in w.from && w.from.gateId === gid) return false;
+          if ('gateId' in w.to && w.to.gateId === gid) return false;
+          return true;
+        }),
+      }));
+    } else {
+      const wid = selected.id;
+      setCircuit((prev) => ({
+        ...prev,
+        wires: prev.wires.filter((w) => w.id !== wid),
+      }));
+    }
+    setSelected(null);
+  }
+
   // Keyboard: Escape cancels pending / selection; Delete or Backspace removes
-  // the selected gate or wire (and any wires touching a deleted gate).
+  // the selected gate or wire.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -560,28 +594,13 @@ export default function CircuitEditor({
       }
       if (!selected) return;
       e.preventDefault();
-      if (selected.kind === 'gate') {
-        const gid = selected.id;
-        setCircuit((prev) => ({
-          ...prev,
-          gates: prev.gates.filter((g) => g.id !== gid),
-          wires: prev.wires.filter((w) => {
-            if ('gateId' in w.from && w.from.gateId === gid) return false;
-            if ('gateId' in w.to && w.to.gateId === gid) return false;
-            return true;
-          }),
-        }));
-      } else {
-        const wid = selected.id;
-        setCircuit((prev) => ({
-          ...prev,
-          wires: prev.wires.filter((w) => w.id !== wid),
-        }));
-      }
-      setSelected(null);
+      deleteSelected();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // deleteSelected is stable enough — it captures `selected` and
+    // `allowDelete` from closure each render, fine for keydown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowDelete, selected]);
 
   function reset() {
@@ -598,35 +617,55 @@ export default function CircuitEditor({
     }
   }
 
+  function showSolution() {
+    if (!solutionCircuit) return;
+    const ok = window.confirm(
+      'Reveal the solution? You can keep editing the circuit afterwards.',
+    );
+    if (!ok) return;
+    setCircuit(solutionCircuit);
+    setSelected(null);
+    setPendingFrom(null);
+  }
+
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="not-prose mx-auto my-12 w-full max-w-[900px] text-apple-text">
+    <div className="not-prose mx-auto my-12 w-full max-w-[920px] text-apple-text">
       <p className="sr-only">
         Interactive circuit builder — visual interaction required. The current
-        circuit&rsquo;s truth table is shown to the right of the canvas.
+        circuit&rsquo;s truth table is shown to the right of the canvas (or
+        below it on smaller screens).
       </p>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-        <Palette gates={availableGates} draggable={allowAddGates} />
+        <Palette
+          gates={availableGates}
+          enabled={allowAddGates}
+          onAdd={addGateFromPalette}
+        />
 
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-3 min-w-0">
+          {/*
+            Responsive frame: the SVG scales by viewBox, the HTML overlays
+            (input switches, output bulbs) are positioned in percentage of the
+            frame so they slide along when the canvas resizes. The aspect
+            ratio is locked to the SVG's so nothing distorts.
+          */}
           <div
-            className="relative rounded-xl border border-apple-border bg-[#f5f5f7] p-4"
+            className="relative w-full rounded-xl border border-apple-border bg-[#f5f5f7]"
             style={{
-              width: CANVAS_W + FRAME_PAD * 2,
-              height: CANVAS_H + FRAME_PAD * 2,
+              aspectRatio: `${FRAME_W} / ${FRAME_H}`,
+              maxWidth: FRAME_W,
+              touchAction: 'none',
             }}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
           >
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-              width={CANVAS_W}
-              height={CANVAS_H}
-              className="block touch-none select-none text-apple-text"
-              style={{ cursor: pendingFrom ? 'crosshair' : 'default' }}
+              viewBox={`${-FRAME_PAD} ${-FRAME_PAD} ${FRAME_W} ${FRAME_H}`}
+              preserveAspectRatio="xMidYMid meet"
+              className="absolute inset-0 h-full w-full select-none text-apple-text"
+              style={{ cursor: pendingFrom ? 'crosshair' : 'default', touchAction: 'none' }}
               onClick={handleCanvasClick}
               onMouseMove={handleSvgMouseMove}
             >
@@ -705,13 +744,16 @@ export default function CircuitEditor({
                 return (
                   <g
                     key={g.id}
-                    onMouseDown={(e) => handleGateMouseDown(e, g.id)}
+                    onPointerDown={(e) => handleGatePointerDown(e, g.id)}
+                    onPointerMove={handleGatePointerMove}
+                    onPointerUp={handleGatePointerUp}
+                    onPointerCancel={handleGatePointerUp}
                     onClick={(e) => e.stopPropagation()}
                     onMouseEnter={() => setHoveredGateId(g.id)}
                     onMouseLeave={() =>
                       setHoveredGateId((curr) => (curr === g.id ? null : curr))
                     }
-                    style={{ cursor: 'grab' }}
+                    style={{ cursor: 'grab', touchAction: 'none' }}
                   >
                     {/*
                       Transparent hit-area that fills the gate's bounding box
@@ -834,62 +876,62 @@ export default function CircuitEditor({
               })}
             </svg>
 
-            {/* Input switches (HTML, on top of the SVG) */}
-            {circuit.inputs.map((input, idx) => (
-              <div
-                key={input.id}
-                className="absolute"
-                style={{
-                  left: EDGE_PADDING + FRAME_PAD,
-                  top:
-                    inputCenterY(idx) -
-                    INPUT_TOTAL_HEIGHT / 2 +
-                    FRAME_PAD,
-                  width: INPUT_WIDTH,
-                }}
-              >
-                <InputSwitch
-                  value={inputValues[input.id] ?? 0}
-                  onChange={(v) =>
-                    setInputValues((prev) => ({ ...prev, [input.id]: v }))
-                  }
-                  label={input.label}
-                />
-              </div>
-            ))}
+            {/*
+              Input switches and output bulbs are HTML overlays positioned in
+              percentages of the SVG coordinate space (which equals the
+              container, since aspect-ratio matches viewBox). They do not
+              shrink — input switches need a fingertip-sized hit area at any
+              viewport — so on very small viewports the visual density
+              increases but interaction stays workable.
+            */}
+            {circuit.inputs.map((input, idx) => {
+              const cy = inputCenterY(idx);
+              return (
+                <div
+                  key={input.id}
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  style={{
+                    left: `${((EDGE_PADDING + INPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
+                    top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
+                  }}
+                >
+                  <InputSwitch
+                    value={inputValues[input.id] ?? 0}
+                    onChange={(v) =>
+                      setInputValues((prev) => ({ ...prev, [input.id]: v }))
+                    }
+                    label={input.label}
+                  />
+                </div>
+              );
+            })}
 
-            {/* Output bulbs (HTML, on top of the SVG) */}
-            {circuit.outputs.map((output, idx) => (
-              <div
-                key={output.id}
-                className="absolute"
-                style={{
-                  left:
-                    CANVAS_W -
-                    EDGE_PADDING -
-                    OUTPUT_WIDTH +
-                    FRAME_PAD,
-                  top:
-                    outputCenterY(idx) -
-                    OUTPUT_TOTAL_HEIGHT / 2 +
-                    FRAME_PAD,
-                  width: OUTPUT_WIDTH,
-                }}
-              >
-                <OutputBulb
-                  value={outputValues[output.id] ?? 0}
-                  label={output.label}
-                />
-              </div>
-            ))}
+            {circuit.outputs.map((output, idx) => {
+              const cy = outputCenterY(idx);
+              return (
+                <div
+                  key={output.id}
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  style={{
+                    left: `${((CANVAS_W - EDGE_PADDING - OUTPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
+                    top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
+                  }}
+                >
+                  <OutputBulb
+                    value={outputValues[output.id] ?? 0}
+                    label={output.label}
+                  />
+                </div>
+              );
+            })}
 
-            {/* Error tooltip (HTML overlay) */}
+            {/* Error tooltip — also positioned as a percentage. */}
             {errorMsg && (
               <div
                 className="pointer-events-none absolute rounded-md bg-white px-2 py-1 text-xs font-medium text-red-600 shadow-md ring-1 ring-red-300"
                 style={{
-                  left: errorMsg.at.x + FRAME_PAD + 12,
-                  top: errorMsg.at.y + FRAME_PAD - 24,
+                  left: `${((errorMsg.at.x + 12) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
+                  top: `${((errorMsg.at.y - 24) / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
                 }}
               >
                 {errorMsg.text}
@@ -897,21 +939,43 @@ export default function CircuitEditor({
             )}
           </div>
 
-          <div className="flex items-center justify-between text-xs text-apple-text-secondary">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-apple-text-secondary">
             <span>
               {pendingFrom
-                ? 'Click a destination port to complete the wire (Esc to cancel).'
+                ? 'Tap a destination port to complete the wire (Esc to cancel).'
                 : selected
-                  ? 'Selected. Press Delete or Backspace to remove.'
-                  : 'Drag a gate from the palette. Click ports to wire.'}
+                  ? selected.kind === 'gate'
+                    ? 'Gate selected. Tap Delete to remove, or drag to move.'
+                    : 'Wire selected. Tap Delete to remove.'
+                  : 'Tap a gate in the palette to add it. Tap ports to wire.'}
             </span>
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
-            >
-              Reset
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {selected && allowDelete && (
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  className="rounded-full border border-red-300 bg-white px-4 py-1.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 motion-reduce:transition-none"
+                >
+                  Delete
+                </button>
+              )}
+              {solutionCircuit && (
+                <button
+                  type="button"
+                  onClick={showSolution}
+                  className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+                >
+                  Show solution
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
 
@@ -929,19 +993,21 @@ export default function CircuitEditor({
 
 function Palette({
   gates,
-  draggable,
+  enabled,
+  onAdd,
 }: {
   gates: GateKind[];
-  draggable: boolean;
+  enabled: boolean;
+  onAdd: (kind: GateKind) => void;
 }) {
   return (
-    <div className="w-full lg:w-[140px]">
+    <div className="w-full lg:w-[140px] lg:flex-shrink-0">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
         Palette
       </h3>
-      <div className="flex flex-row gap-2 lg:flex-col">
+      <div className="flex flex-row flex-wrap gap-2 lg:flex-col">
         {gates.map((kind) => (
-          <PaletteItem key={kind} kind={kind} draggable={draggable} />
+          <PaletteItem key={kind} kind={kind} enabled={enabled} onAdd={onAdd} />
         ))}
       </div>
     </div>
@@ -950,31 +1016,31 @@ function Palette({
 
 function PaletteItem({
   kind,
-  draggable,
+  enabled,
+  onAdd,
 }: {
   kind: GateKind;
-  draggable: boolean;
+  enabled: boolean;
+  onAdd: (kind: GateKind) => void;
 }) {
   return (
-    <div
-      draggable={draggable}
-      onDragStart={(e) => {
-        e.dataTransfer.setData(PALETTE_MIME, kind);
-        e.dataTransfer.effectAllowed = 'copy';
-      }}
+    <button
+      type="button"
+      disabled={!enabled}
+      onClick={() => onAdd(kind)}
       className={`flex flex-col items-center gap-1 rounded-lg border border-apple-border bg-white p-2 transition-colors duration-200 motion-reduce:transition-none ${
-        draggable
-          ? 'cursor-grab hover:border-apple-blue/40 active:cursor-grabbing'
+        enabled
+          ? 'cursor-pointer hover:border-apple-blue/40 active:bg-apple-bg/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2'
           : 'opacity-60'
       }`}
-      aria-label={`${kind} gate`}
-      title={draggable ? `Drag to add a ${kind} gate` : `${kind} gate`}
+      aria-label={`Add a ${kind} gate to the canvas`}
+      title={enabled ? `Add a ${kind} gate` : `${kind} gate`}
     >
       <svg viewBox="-32 -22 64 50" className="block h-10 w-full text-apple-text">
         <GateSymbol kind={kind} x={0} y={0} size={40} showLabel={false} />
       </svg>
       <p className="text-xs font-medium text-apple-text-secondary">{kind}</p>
-    </div>
+    </button>
   );
 }
 
@@ -1028,14 +1094,17 @@ function Port({
           style={{ pointerEvents: 'none' }}
         />
       )}
-      {/* Larger invisible hit-area circle. */}
+      {/*
+        Larger invisible hit-area circle. Sized for fingertips (PORT_HIT_R)
+        so taps land reliably on touch.
+      */}
       <circle
         cx={point.x}
         cy={point.y}
         r={PORT_HIT_R}
         fill="transparent"
-        style={{ cursor: 'crosshair' }}
-        onMouseDown={(e) => e.stopPropagation()}
+        style={{ cursor: 'crosshair', touchAction: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
         onClick={onClick}
@@ -1081,9 +1150,9 @@ function WireSelectable({
           d={path}
           fill="none"
           stroke="transparent"
-          strokeWidth="12"
-          style={{ cursor: 'pointer' }}
-          onMouseDown={(e) => e.stopPropagation()}
+          strokeWidth="16"
+          style={{ cursor: 'pointer', touchAction: 'none' }}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={onClick}
         />
       )}
@@ -1125,7 +1194,7 @@ function SidePanel({
   solved: boolean;
 }) {
   return (
-    <div className="w-full space-y-4 lg:w-[160px]">
+    <div className="w-full space-y-4 lg:sticky lg:top-4 lg:w-[160px] lg:flex-shrink-0">
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">

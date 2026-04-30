@@ -171,19 +171,30 @@ export default function RandomAccessMemory() {
       <div className="text-center text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
         Memory Address Register (MAR)
       </div>
-      <div className="mt-2 grid place-items-center" style={{ gridTemplateColumns: 'repeat(8, 64px)', columnGap: '12px' }}>
-        {POSITIONS.map((pos) => (
-          <div key={`mar-${pos}`} className="flex flex-col items-center gap-1.5">
-            <span className="font-mono text-[11px] text-apple-text-secondary">
-              bit {pos}
-            </span>
-            <InputSwitch
-              value={state.mar[pos]}
-              onChange={(v) => setMarBit(pos, v)}
-              label={`MAR bit ${pos}`}
-            />
-          </div>
-        ))}
+      {/*
+        MAR row: 8 toggle switches in a horizontal line so the binary address
+        reads left-to-right. On viewports too narrow for ~600px of toggles
+        the row scrolls horizontally rather than wrapping (wrapping would
+        break the bit-position mental model).
+      */}
+      <div className="-mx-4 mt-2 overflow-x-auto px-4">
+        <div
+          className="mx-auto grid place-items-center"
+          style={{ gridTemplateColumns: 'repeat(8, 64px)', columnGap: '12px', width: 'max-content' }}
+        >
+          {POSITIONS.map((pos) => (
+            <div key={`mar-${pos}`} className="flex flex-col items-center gap-1.5">
+              <span className="font-mono text-[11px] text-apple-text-secondary">
+                bit {pos}
+              </span>
+              <InputSwitch
+                value={state.mar[pos]}
+                onChange={(v) => setMarBit(pos, v)}
+                label={`MAR bit ${pos}`}
+              />
+            </div>
+          ))}
+        </div>
       </div>
       <p className="mt-3 text-center text-sm text-apple-text-secondary" aria-live="polite">
         Address{' '}
@@ -199,7 +210,11 @@ export default function RandomAccessMemory() {
         </output>
       </p>
 
-      {/* The 16x16 grid */}
+      {/*
+        The 16x16 grid. At ~382px wide it fits on most phones; on the
+        narrowest viewports (≲ 360px) the grid overflows its parent and the
+        outer overflow-x-auto wrapper scrolls.
+      */}
       <div
         role="grid"
         aria-label="256-byte memory grid"

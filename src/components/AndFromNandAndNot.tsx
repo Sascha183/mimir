@@ -38,6 +38,41 @@ const TARGET_AND: TruthTable = {
   ],
 };
 
+// Reference solution: NAND followed by NOT (= AND).
+const SOLUTION_AND: Circuit = {
+  gates: [
+    { id: 'sol-nand', kind: 'NAND', position: { x: 240, y: 180 } },
+    { id: 'sol-not', kind: 'NOT', position: { x: 360, y: 180 } },
+  ],
+  wires: [
+    {
+      id: 'sol-w1',
+      from: { source: 'input', inputId: 'A' },
+      to: { gateId: 'sol-nand', port: 'in1' },
+    },
+    {
+      id: 'sol-w2',
+      from: { source: 'input', inputId: 'B' },
+      to: { gateId: 'sol-nand', port: 'in2' },
+    },
+    {
+      id: 'sol-w3',
+      from: { gateId: 'sol-nand', port: 'out' },
+      to: { gateId: 'sol-not', port: 'in1' },
+    },
+    {
+      id: 'sol-w4',
+      from: { gateId: 'sol-not', port: 'out' },
+      to: { source: 'output', outputId: 'Y' },
+    },
+  ],
+  inputs: [
+    { id: 'A', label: 'A', value: 0 },
+    { id: 'B', label: 'B', value: 0 },
+  ],
+  outputs: [{ id: 'Y', label: 'Y' }],
+};
+
 export default function AndFromNandAndNot() {
   const [solved, setSolved] = useState(false);
   const [hintShown, setHintShown] = useState(false);
@@ -55,21 +90,14 @@ export default function AndFromNandAndNot() {
         </p>
       </section>
 
-      {/*
-        Wrapper allows the editor to overflow horizontally when its natural
-        ~900px width is wider than the article column (lesson pages reserve
-        space for the side nav and outline rail). On wide screens the editor
-        fits in the parent and no scrolling is needed.
-      */}
-      <div className="overflow-x-auto pb-1">
-        <CircuitEditor
-          initialCircuit={INITIAL_CIRCUIT}
-          availableGates={['NAND', 'NOT']}
-          targetTruthTable={TARGET_AND}
-          onSolved={() => setSolved(true)}
-          storageKey="hciw:and-from-nand-and-not"
-        />
-      </div>
+      <CircuitEditor
+        initialCircuit={INITIAL_CIRCUIT}
+        availableGates={['NAND', 'NOT']}
+        targetTruthTable={TARGET_AND}
+        solutionCircuit={SOLUTION_AND}
+        onSolved={() => setSolved(true)}
+        storageKey="hciw:and-from-nand-and-not"
+      />
 
       <div className="mt-2">
         {hintShown ? (

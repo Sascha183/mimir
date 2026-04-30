@@ -23,6 +23,63 @@ const TARGET_XOR: TruthTable = {
   ],
 };
 
+// Reference solution: (A OR B) AND NOT(A AND B). Five gates total.
+const SOLUTION_XOR: Circuit = {
+  gates: [
+    { id: 'sol-or', kind: 'OR', position: { x: 220, y: 130 } },
+    { id: 'sol-and1', kind: 'AND', position: { x: 220, y: 230 } },
+    { id: 'sol-not', kind: 'NOT', position: { x: 320, y: 230 } },
+    { id: 'sol-and2', kind: 'AND', position: { x: 420, y: 180 } },
+  ],
+  wires: [
+    {
+      id: 'sol-w1',
+      from: { source: 'input', inputId: 'A' },
+      to: { gateId: 'sol-or', port: 'in1' },
+    },
+    {
+      id: 'sol-w2',
+      from: { source: 'input', inputId: 'B' },
+      to: { gateId: 'sol-or', port: 'in2' },
+    },
+    {
+      id: 'sol-w3',
+      from: { source: 'input', inputId: 'A' },
+      to: { gateId: 'sol-and1', port: 'in1' },
+    },
+    {
+      id: 'sol-w4',
+      from: { source: 'input', inputId: 'B' },
+      to: { gateId: 'sol-and1', port: 'in2' },
+    },
+    {
+      id: 'sol-w5',
+      from: { gateId: 'sol-and1', port: 'out' },
+      to: { gateId: 'sol-not', port: 'in1' },
+    },
+    {
+      id: 'sol-w6',
+      from: { gateId: 'sol-or', port: 'out' },
+      to: { gateId: 'sol-and2', port: 'in1' },
+    },
+    {
+      id: 'sol-w7',
+      from: { gateId: 'sol-not', port: 'out' },
+      to: { gateId: 'sol-and2', port: 'in2' },
+    },
+    {
+      id: 'sol-w8',
+      from: { gateId: 'sol-and2', port: 'out' },
+      to: { source: 'output', outputId: 'Y' },
+    },
+  ],
+  inputs: [
+    { id: 'A', label: 'A', value: 0 },
+    { id: 'B', label: 'B', value: 0 },
+  ],
+  outputs: [{ id: 'Y', label: 'Y' }],
+};
+
 export default function XorFromPrimitives() {
   const [solved, setSolved] = useState(false);
   const [hintShown, setHintShown] = useState(false);
@@ -41,15 +98,14 @@ export default function XorFromPrimitives() {
         </p>
       </section>
 
-      <div className="overflow-x-auto pb-1">
-        <CircuitEditor
-          initialCircuit={INITIAL_CIRCUIT}
-          availableGates={['AND', 'OR', 'NOT']}
-          targetTruthTable={TARGET_XOR}
-          onSolved={() => setSolved(true)}
-          storageKey="hciw:xor-from-primitives"
-        />
-      </div>
+      <CircuitEditor
+        initialCircuit={INITIAL_CIRCUIT}
+        availableGates={['AND', 'OR', 'NOT']}
+        targetTruthTable={TARGET_XOR}
+        solutionCircuit={SOLUTION_XOR}
+        onSolved={() => setSolved(true)}
+        storageKey="hciw:xor-from-primitives"
+      />
 
       <div className="mt-2">
         {hintShown ? (

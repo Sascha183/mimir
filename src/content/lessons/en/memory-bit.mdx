@@ -23,6 +23,8 @@ This is a real problem if you want to build a computer. A computer needs to reme
 
 So we need something new. A circuit whose output depends not just on its current inputs, but on what its inputs used to be.
 
+A note before we start, because this lesson does two new things at once. First, we are going back to NAND. The last three lessons composed AND, OR, and XOR out of gates you had already built — climbing the abstraction ladder. For memory we drop back to the bottom rung, because the cleanest possible memory is two raw NANDs in a feedback loop. Second, the inputs in this lesson behave differently from anything you have seen so far. Until now every switch you have flipped has been a *toggle*: flip it on, it stays on; flip it off, it stays off. The buttons in the next widget are *momentary*. You press one, it briefly puts a 1 on its wire, and the moment you release it the wire goes back to 0. The latch reacts to that brief pulse — and *holds the new state after the pulse is gone*. This is the first lesson where time matters, where "what happened a fraction of a second ago" is a thing the circuit can react to. It is the foundation of everything time-varying that comes later: the clock, the stepper, the whole CPU.
+
 Here is the trick. Take two NAND gates. Wire each one's output back into the other one's input. Like this — the top NAND's output feeds into the bottom NAND, and the bottom NAND's output feeds back into the top. The two gates are now whispering to each other in a loop.
 
 The two remaining inputs (one on each NAND) we will call **Set** and **Reset**. They are normally held high. When you click Set, the top NAND's input is briefly pulled low. When you click Reset, the bottom NAND's input is briefly pulled low.

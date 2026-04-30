@@ -508,3 +508,311 @@ All three programs share the same code: DATA-init R3 to 0, DATA-init R0 and R1, 
 - JCAEZ recipe: with caez = 0100 (JA) and flags.aLarger = 0, step 5 enables ACC (skip).
 - CLF cycle: state.flags ends at all zeros.
 - End-to-end: run "find larger" program with R0=7, R1=4 — R3 = 7. With R0=4, R1=7 — R3 = 7 (the other path).
+
+---
+
+# Curriculum review against the source book (2026-04-30)
+
+The sections above are historical visualization-design notes for individual lessons. This section is a top-down review of the whole curriculum against Scott's *But How Do It Know?*, looking for content gaps, pacing issues, and pedagogical moves the book makes that the curriculum currently leaves on the table.
+
+The shape of the recommendation is: **the curriculum is structurally strong but skips three book chapters that carry real pedagogical weight, and underweights one more.** Each of those is a candidate for a small new lesson or a meaningful expansion of an existing one. Module 4 and Module 5 are not yet sketched — I include book-aligned outlines below so the next planning pass has a starting point.
+
+## Top-priority gap: a dedicated lesson on **Codes**
+
+The book devotes a full chapter to *Codes* — placed deliberately right after *Eight Is Enough* (the byte) and before *Back to the Byte* (the enabler/register). The pedagogical claim is foundational and the book hammers it hard:
+
+> "There is nothing inherent in a byte that has anything to do with a character... The letter is represented by the code. The only thing in the byte is the code."
+
+This is the bridge between hardware (just bits) and meaning (programs, text, pixels, instructions). The same byte `0100 0001` is the number 65, the letter 'A', a particular shade of grey, and a particular CPU instruction — the meaning is *external* to the bits. Every later chapter ("Numbers" derives the binary number code, "Instructions" derives the instruction code, "Another Code" describes ASCII for the keyboard) builds on this idea.
+
+The current curriculum:
+- Lesson 9 (`the-byte`) has one paragraph noting "the same byte means different things in different contexts." Useful, but it's a side observation rather than the lesson's centerpiece.
+- The roadmap notes for Module 2 explicitly flag this: *"Anything about codes, ASCII, or binary number representation — the book has more material here, and we may want a Lesson 9.5 or 12.5 specifically about codes."*
+- No standalone treatment exists.
+
+**Recommendation: add Lesson 9.5 — "Codes" — between The Byte (9) and The Register (10).**
+
+Slug: `codes`. Duration: ~6 minutes. Prerequisites: `["the-byte"]`. Pattern: prose-led with a small interactive byte-decoder.
+
+Body:
+- Open with the book's framing: a byte holds 256 patterns; nothing in the byte itself says what a pattern means.
+- Introduce ASCII as the first real example. Show the partial table from the book (A–J, uppercase + lowercase). Note the elegant detail: uppercase and lowercase of the same letter differ by a single bit.
+- Note that ASCII was *invented by people in committee meetings*, not derived from anything natural. There is no mathematical reason 'A' is `0100 0001`; someone wrote it down, the industry agreed, here we are.
+- Foreshadow: the next code we'll meet is the **binary number code** (the next lesson — see below). Later in the curriculum we'll meet the **instruction code** (Module 3) and another encoding for the keyboard (Module 4). All of them are codes layered on top of the same bytes.
+
+Interactive component (`CodeDecoder`): one byte (8 toggles), four parallel readouts of the same bits — "as ASCII character", "as decimal number", "as 8-bit grey shade", "as raw bits". The same eight switches drive all four; the learner sees that nothing in the byte changes, only the code applied to it changes.
+
+This lesson takes ~half an evening to build, costs the curriculum one interactive widget, and pays off across every later lesson where bytes are interpreted differently in different contexts.
+
+## Major gap: a "Binary Numbers" lesson, separate from The Byte
+
+The book's *Numbers* chapter is one of its longest and most carefully paced. It walks: tally marks → Roman numerals → decimal → senary (base-6, motivated by a three-toed sloth and clock minutes) → binary → hexadecimal. The pedagogy is gradual: by the time the learner sees binary, they understand that base-10 is one choice among many and the choice of base is constrained by your number of digits.
+
+The current curriculum compresses this into one paragraph in Lesson 9 (`the-byte`):
+
+> "Bit 0 (rightmost) is worth 1, bit 1 is worth 2, bit 2 is worth 4, then 8, 16, 32, 64, and finally bit 7 (leftmost) is worth 128. Add up the worths of every bit that is on, and that is the decimal value."
+
+That paragraph asks the learner to internalize positional notation in a non-decimal base — in one paragraph, after spending the previous eight lessons thinking only in 0/1. A learner with weak math intuition may glide over it without ever feeling *why* `1101` is 13.
+
+**Recommendation: split out a Lesson 9.7 — "Binary Numbers" — between Codes (9.5) and The Register (10).**
+
+Slug: `binary-numbers`. Duration: ~7 minutes. Prerequisites: `["codes"]`. Pattern: prose-led with a binary-decimal converter widget.
+
+Body:
+- Frame as: codes are arbitrary; *one* code is special. The binary number code is the natural one — it requires no committee, it falls out of "what if we used positional notation with two digits instead of ten?".
+- Walk the book's senary detour briefly: clock minutes (00–59) actually use a base-6 left digit. The learner already does multi-base arithmetic in everyday life.
+- Then derive binary from "what if we only had two symbols?". The right column is 1s, the next is 2s, then 4s, 8s, 16s, 32s, 64s, 128s.
+- Connect to the byte: the eight bits' weights are exactly the powers of two, so a byte represents 0–255.
+- Note hex briefly as "computer people sometimes group four bits and call it one hex digit, so `0011 1100` = 3C". Don't dwell; the curriculum doesn't use hex elsewhere.
+
+Interactive component (`BinaryNumberConverter`): 8 toggles + a column showing the "value if on" of each bit (128, 64, 32, 16, 8, 4, 2, 1) + a sum box at the bottom. Optional: a "type a decimal, see which bits light up" reverse converter, like the book's example with 246.
+
+This lesson pairs with Codes (9.5) — Codes establishes that meaning is layered on bits; Binary Numbers establishes the one layering that's mathematically natural.
+
+If the existing Lesson 9 (`the-byte`) absorbs the new material instead, the existing decimal/binary readout in `TheByte.tsx` already does the work and the prose just needs expansion. That's a lighter-weight alternative to a whole new lesson — but it leaves the byte lesson long and the codes idea understated.
+
+## Minor gap: the "Logic" chapter
+
+The book has a brief chapter literally called *Logic* between *The Comparator and Zero* and *The Arithmetic and Logic Unit*. It explains why ANDer/ORer/XORer are called *logic* operations (Aristotle: two facts → third fact, AND/OR/XOR fit; the adder doesn't, hence "arithmetic"). Tiny chapter, but it gives the learner the vocabulary "arithmetic and logic" so the ALU's name lands without confusion.
+
+The curriculum jumps directly from `byte-operations` (L15) to `the-alu` (L16). The ALU's name is asserted in L16's prose without etymology.
+
+**Recommendation: don't add a lesson — fold a short paragraph into L15 or L16.** A two-sentence aside in L15's prose (*"ADD/SHR/SHL are called* arithmetic*; AND/OR/XOR/NOT are called* logic *because they take inputs and derive an output the way Aristotle's syllogisms take facts and derive conclusions. The combined unit is therefore the* arithmetic-and-logic *unit — ALU. The name finally makes sense."*) covers the gap.
+
+## Major gap: "What's Next?" — the bridge to instructions
+
+Between *Doing Something Useful, Revisited* and *The First Great Invention*, the book has a chapter called *What's Next?* that opens with a remarkable analogy:
+
+> "Imagine that the job that an employee does at a fast food restaurant gets broken down into its individual elements... Now lets say that there are 256 or less individual actions involved in the job of working at such an establishment. You could then invent a code that would associate one of the states of a byte with each of the individual activities of an employee. Then you could express the sequence of an employee's actions as a sequence of bytes."
+
+This is the conceptual bridge: an action becomes a byte; a job becomes a sequence of bytes; a *program* is born. It's the moment instructions click as "just another code on top of bytes" — and it ties straight back to the Codes lesson.
+
+The curriculum currently jumps from L19 (control section) directly to L20 (instruction cycle). The opening paragraph of L20 asserts "the CPU fetches an instruction from RAM, executes it, repeats" without conceptually motivating *why* an instruction is a byte in the first place.
+
+**Recommendation: add a short prose-only lesson (L19.5) — "From Actions to Programs"** — between Control Section (19) and Instruction Cycle (20).
+
+Slug: `from-actions-to-programs`. Duration: ~5 minutes. Prerequisites: `["control-section"]`. Pattern: pure prose with no widget, like Lesson 14 (module-2-recap).
+
+Body:
+- Use the book's fast-food-employee analogy verbatim or near-verbatim — it's that good.
+- Connect to the recipes from L19: each recipe row is "an action". A sequence of recipes is "a job". If we put a byte in front of each recipe to *name* it, the byte is an *instruction*.
+- Foreshadow: this is yet another code (calling back to L9.5/Codes). The instruction code is invented, like ASCII; we'll get to define it ourselves in the next lesson.
+- Closing tease: time to look at the actual instruction cycle.
+
+Cost: low — pure prose, ~250 words. Pays off by making L20 land harder.
+
+## Major gap: "A Few More Words on Arithmetic" — the Turing-completeness moment
+
+Between *The Clear Flags Instruction* and *Tā Daa!*, the book has a chapter called *A Few More Words on Arithmetic* that demonstrates: subtraction via NOT-and-ADD-and-1 (two's complement), multiplication via shift-and-add (with full code), division via repeated subtraction. The book gives the *complete program* for binary multiplication — about 12 instructions, all using primitives the curriculum has already covered.
+
+This is the Turing-completeness moment made concrete. The curriculum's L25 (conditional jumps) lands the Turing-completeness *claim* with prose ("the computer is now Turing-complete"). The book's chapter actually *demonstrates* it: with only ADD, SHR, SHL, JMP, JC, CLF, the CPU multiplies two numbers. No new hardware, just a clever program.
+
+The curriculum's planned L26 (cpu-recap) is currently scoped as "pure prose with a final demonstration widget" running "a slightly bigger pre-loaded program (maybe 10-15 instructions doing something visibly meaningful — multiplying two numbers via repeated addition, or counting from 0 to a target)." This *almost* covers the gap — but it bundles celebration and demonstration. I think they should split.
+
+**Recommendation: rescope L26 as the multiplication-program lesson, and add a separate (very small) closing reflection.**
+
+Concretely:
+
+**L26 — "Subtraction, Multiplication, Division: The Turing-Completeness Moment"**
+- Slug: `arithmetic-via-programs` (or keep `cpu-recap` as the slug to preserve URL).
+- Duration: ~10 minutes.
+- Prerequisites: `["conditional-jumps"]`.
+- Pattern: extension of L25's `ConditionalJumpsCycle` widget with the book's multiplication program preloaded.
+- Body covers:
+  - Subtraction: NOT R1, ADD 1, ADD R0 (the book's exact example: 37 - 21).
+  - Multiplication: walk through the book's 12-instruction shift-and-add program, with explicit traces of R0/R1/R2/R3 after each iteration (the book gives these traces; the lesson reproduces them).
+  - Division: gestured at, not implemented (the book itself only sketches it).
+- The widget extension: extend the existing program-runner from L23/L24/L25 with a new program-picker entry "Multiply 5 × 5". Step through, watch R2 climb to 25.
+- The pedagogical payoff is the same as the book's: *the CPU only knows how to ADD, but it can MULTIPLY because shift-and-add IS multiplication, and the loop comes for free from JC*. There's no new hardware; the depth comes from the program.
+
+**L27 — "What We've Built" (closing reflection, ~3 minutes, prose only)**
+- Slug: `module-3-recap`.
+- The current planned L26 prose, slimmed: survey the journey, name the next module.
+- The widget moment is gone — that energy is now in L26.
+
+This costs Module 3 one extra lesson but converts the climax from "celebratory text + pre-loaded demo" to "the lesson where the learner sees a CPU multiply two numbers using only ADD". The latter is dramatically more memorable.
+
+## Pacing: Module 1 lessons 5–7 are structurally identical
+
+Lessons 5 (AND from NAND), 6 (OR from NAND), 7 (XOR from primitives) all use the freeform `CircuitEditor` pattern with a target truth table. The book covers all three in a single chapter (*More Gate Combinations*). The curriculum's expansion to three lessons is justifiable — each gate has its own pedagogical "aha" — but three back-to-back lessons of the same widget pattern risks fatigue.
+
+**Recommendation: don't restructure (these are shipped). But for Module 4 and beyond, watch for the same pattern — three consecutive lessons with the same interactive shape erode novelty.** If the user reports L5–L7 feeling repetitive in user-testing, the cleanest restructure would be to merge OR and XOR into a single "Compositions" lesson where the learner builds OR first as warmup and XOR as the main exercise. That would shorten Module 1 by one lesson without losing pedagogical content.
+
+## Pacing: Module 2 ends well; the L14 recap is well-placed
+
+Module 2's lesson 14 (`module-2-recap`) is a pure-prose pause that lands the static-vs-dynamic boundary. After reading it again, this is exactly the right move — it's the kind of breath the book itself doesn't take but probably should. Keep it.
+
+## Module 4 sketch: peripherals (book chapters 80–87)
+
+The book covers the outside world in seven chapters: *The Outside World*, *The Keyboard*, *The Display Screen*, *Another Code*, *The Final Word on Codes*, *The Disk*, *Excuse Me Ma'am* (interrupts), *That's All Folks*. The technical content is light per chapter — most of the gates have already been seen — but the conceptual content is genuinely new: I/O bus, peripherals, adapters, interrupts, the device-address pattern.
+
+Suggested Module 4 lessons (to be refined when the time comes):
+
+- **L28 — The I/O Bus**: extend the CPU bus with four control wires (I/O, Data/Address, I/O Clk e, I/O Clk s). Introduce the IN/OUT instruction. Widget: extend the CPU diagram with an I/O bus stub and a single dummy peripheral; learner sends bytes back and forth via two new instructions.
+- **L29 — The Keyboard**: walk through the book's keyboard adapter (gates #1, #2, the memory bit that latches "I am selected"). Show the program that reads a keystroke into a register. Widget: a real virtual keyboard wired up via the L28 I/O system; pressing a key puts ASCII into a register. Calls back to the Codes lesson (9.5).
+- **L30 — The Display Screen**: framebuffer model. The screen is a region of RAM mapped to display addresses; writing a byte to the right address turns on a pixel. The book details the scan-line model; for the curriculum, simplify to a small (8×8?) pixel grid widget where writing to RAM addresses 0–63 lights up pixels.
+- **L31 — Disk and Persistence**: how a disk adapter works at the byte-bus level. Light on widget; this is more conceptual than gate-level.
+- **L32 — Interrupts**: the *Excuse Me Ma'am* chapter. The CPU is in a loop; how does the keyboard tell it "a key was pressed *now*" without the CPU polling? The interrupt line, the interrupt handler, the resume-after-handler trick. This is genuinely subtle and probably needs a custom widget.
+- **L33 — Module 4 recap / End of Hardware**: pure prose, ~3 minutes. Hardware is done. Next is software.
+
+Likely 4–5 lessons total, leaning prose-heavy except L29 and L30.
+
+## Module 5 sketch: software (book chapters 88–101)
+
+The book ends with twelve chapters on software: *Hardware and Software*, *Programs*, *The Operating System*, *Languages*, *The File System*, *Errors*, *Computer Diseases?* (viruses/malware), *Firmware*, *Boots*, *Digital vs. Analog*, *I Lied — Sort Of*, *Full Disclosure*, *Philosophy*. Most are short prose chapters. They share a common arc: now that you understand the hardware, here's how the software stack you actually interact with sits on top of it.
+
+The interactive density should drop sharply in Module 5 — these are reflection lessons, not simulator lessons. The risk is making Module 5 feel like a textbook after four modules of widgets. The mitigation is brevity: each lesson should be 3–5 minutes of prose, not 8–12. Possible structure:
+
+- **L34 — Hardware vs. Software**: the book's framing. A program is just bytes in RAM; hardware doesn't care if the bytes came from the OS, a game, or a virus.
+- **L35 — Programs and Languages**: machine code → assembly → high-level languages. Why a `for` loop in JavaScript ultimately becomes JMPs and JCs.
+- **L36 — The Operating System**: the program that loads other programs. Memory management, peripheral arbitration, the file system as an abstraction over disk addresses.
+- **L37 — Boots and Firmware**: how the computer starts. Where do the *first* instructions come from when RAM is empty?
+- **L38 — Errors and Diseases**: what goes wrong. Bugs (the program is wrong), crashes (a JMP to garbage), viruses (a program someone else wrote got into RAM).
+- **L39 — Digital vs. Analog**: the philosophical close. Bits are an idealization of voltages; the real hardware is analog underneath. The book's *I Lied — Sort Of* / *Full Disclosure* / *Philosophy* chapters compressed to one closing reflection.
+
+Likely 5–6 lessons. Pure prose throughout; interactive components only where they genuinely help (e.g., a "watch a high-level statement compile to bytes" widget for L35).
+
+## Summary of recommended changes
+
+In rough priority order:
+
+1. **Add L9.5 (Codes)** — biggest pedagogical payoff, foundational concept the book hammers and the curriculum understates.
+2. **Rescope L26** — convert from "celebratory recap" to "multiplication-program demo". Add a short L27 for the actual reflection.
+3. **Add L19.5 (From Actions to Programs)** — pure prose, fast to build, conceptually bridges control section to instruction cycle.
+4. **Add L9.7 (Binary Numbers)** — give binary positional notation its own lesson, paired with Codes.
+5. **Tweak L15 or L16 prose** — fold in the "logic" etymology in two sentences; no new lesson.
+6. **Sketch Module 4 and 5 in CLAUDE.md** — start with the structures above and refine when the time comes.
+
+Items 1 and 2 are the highest-leverage changes. Item 1 makes the *meaning of bytes* land properly; item 2 turns the Module 3 climax from a recap into a genuine "holy shit, the CPU just multiplied" moment. Items 3 and 4 are smaller. Item 5 is a one-paragraph edit. Item 6 is planning, not building.
+
+None of these require restructuring shipped lessons. All are additive.
+
+---
+
+# User-reported issues from first-pass review (2026-04-30)
+
+The author worked through the shipped curriculum and surfaced seven concrete issues. Five of them are pedagogical — fixable with prose and small interaction tweaks. Two of them are layout/responsive issues that need real engineering. Below is each item with the recommended fix.
+
+## 1. Diagrams are too wide on smartphones
+
+**Symptom:** widget canvases (NAND diagrams, bus diagrams, RAM grid, CPU diagram) overflow the viewport on phones, requiring horizontal scroll or shrinking text to unreadable sizes.
+
+**Root cause:** widgets generally render with fixed pixel widths inside `<svg width="…">` or `<div className="w-[800px]">`-style attributes, with no responsive breakpoint behaviour.
+
+**Recommended fix (codebase-wide):**
+- For SVG-based widgets (`CircuitCanvas`, `TheDecoder`, `Bulb`, gate symbols): set `viewBox` and let the SVG scale via CSS (`width: 100%; height: auto`). Never hardcode `width="600"` on an `<svg>` element. The viewBox preserves the coordinate space; CSS handles sizing.
+- For HTML-based composite widgets (`CpuDiagram`, `RandomAccessMemory`, `TheBus`): wrap in a CSS grid that drops to a single column under a `~640px` breakpoint. The CPU diagram in particular should rearrange — registers above the bus on mobile, beside on desktop. Tailwind's `sm:flex-row flex-col` plus `min-w-0` on flex children fixes most cases.
+- For widgets that genuinely cannot fit (`InstructionCycle`, `RandomAccessMemory`'s 16×16 grid): wrap in a horizontally-scrollable container with a clear scroll affordance (gradient fade-out at the edges) and a small "swipe to see more" hint on first paint. This is the right move for the timeline-style widgets where the *content* really is wider than 320px.
+- Audit checklist: open every existing widget at 360px viewport in Chrome DevTools mobile mode, note any horizontal scroll on the *page* (scroll on the *widget* is fine; scroll on the surrounding article body is not).
+
+**Effort:** medium. ~1 day to audit and fix all shipped widgets. The patterns above can mostly be applied as a sweep.
+
+## 2. Diagrams crowd the truth table on desktop
+
+**Symptom:** in the gate-construction lessons (NAND/NOT/AND/OR/XOR), the `CircuitEditor` canvas is wide enough that the truth table beside it pushes off-screen on smaller laptop displays. Learner has to scroll right to check their work.
+
+**Root cause:** canvas-and-table layout assumes a wide viewport (probably ≥1280px). At ~1024px laptop width, the canvas eats the row.
+
+**Recommended fix:**
+- Cap canvas width with `max-w-2xl` (≈672px) so the table always has room beside it on desktop.
+- Below `lg` breakpoint (≈1024px), stack vertically: canvas on top, table directly below. The truth table is always visible without scrolling — it's the verification UI for the canvas action.
+- Make the truth table sticky (`position: sticky; top: 1rem`) inside its column so even on long pages it stays in view as the learner experiments at the canvas.
+
+**Effort:** small. One CSS change in `CircuitEditor.tsx` plus a layout tweak in each gate-construction lesson MDX (or a shared lesson layout component if one exists).
+
+## 3. Circuit Builder is unusable on touch devices
+
+**Symptom:** drag-and-drop is glitchy on touch, and there's no way to delete an individual gate after placing it.
+
+**Root cause:** drag handlers almost certainly use mouse events (`onMouseDown`/`onMouseMove`) rather than pointer events. Touch events fire differently and at different timing — drags get interrupted by browser scroll, taps register as no-op clicks. And: deletion was probably designed as drag-to-trash, which doesn't survive touch UX.
+
+**Recommended fix (this is the largest of the user-reported items):**
+- **Replace mouse events with pointer events** throughout `CircuitEditor.tsx` and any drag-source components. `onPointerDown`/`onPointerMove`/`onPointerUp` handle mouse, touch, and pen uniformly. Add `touch-action: none` on the canvas surface to prevent browser scroll from stealing the gesture.
+- **Add explicit selection + delete UI**: tapping a placed gate selects it (visible outline + a small `×` button appearing on the gate itself, or a "Delete selected gate" button in the toolbar). Same flow works on mouse and touch. Keyboard equivalent: Delete/Backspace removes the selected gate. Drag-to-trash can stay as a power-user shortcut for mouse but should not be the only path.
+- **Add wire deletion**: same pattern — tap a wire to select it, tap the delete button to remove it. Currently if wires are also drag-to-delete-only, they have the same problem.
+- **Test on a real device** before claiming the fix works. Mobile DevTools emulation does not reproduce the glitchiness; physical touch latency and gesture interruption are real.
+
+**Effort:** medium-to-large. ~2 days. The pointer-event migration is mechanical; the selection-and-delete UI is a real interaction-design pass that should be tested on phone, tablet, and mouse.
+
+**Bonus:** once selection exists, "show solution" (item 4) becomes much cheaper because the same selection state can drive a "highlight the next correct wire" hint progression.
+
+## 4. Add a "Show solution" button alongside "Show hint"
+
+**Symptom:** the "Show hint" button gives a verbal nudge, but if the learner is genuinely stuck after the hint, there's no escape hatch short of giving up on the lesson.
+
+**Recommended fix:**
+- Add a "Show solution" button to `GuidedBuilder` and `CircuitEditor`. The button is **hidden by default** and reveals only after the learner has clicked "Show hint" *and* spent at least ~30 seconds without making progress (or has clicked it twice). The friction is deliberate — we want learners to struggle a bit, not skim — but capping the friction prevents abandonment.
+- On click: pop a small confirmation ("Reveal the answer? You can still experiment afterward.") and on confirm, populate the canvas with the correct circuit. The truth table on the right will go all-green.
+- Critically: don't lock the learner out of the canvas after revealing. They should be able to *experiment* with the correct solution — toggle inputs, trace wires, even break and rebuild it. The point of the reveal is to convert "I'm stuck" into "now I can see what it should look like" not "you failed, here's the answer".
+- A follow-up nudge: after reveal, the lesson body could surface a small "Try it again from scratch?" reset button and a one-line "Most learners get this on the second try once they've seen the structure once."
+
+**Effort:** small-to-medium. The state transition is straightforward; the timing/gating logic and the "experiment after reveal" affordance are the parts that need care.
+
+## 5. L7 (XOR) excludes NAND, but L8 (memory bit) brings it back
+
+**Symptom:** L7's palette is `["AND", "OR", "NOT"]` — explicitly *no* NAND, with the framing "use only the gates you've built yourself." L8 then opens with two cross-coupled NANDs, with no acknowledgement that NAND was just exiled.
+
+**Root cause:** this is a genuine pedagogical inconsistency, not a bug. L5–L7 promote the "we've graduated past the primitive; build from your own gates" frame. L8 needs NAND because the canonical SR latch is two cross-coupled NANDs (or NORs, but the curriculum picks NAND consistently with Module 1's choice of universal gate). The two framings collide.
+
+**Recommended fix (prose only, no code):**
+
+Edit L7's closing tease and L8's opener in tandem:
+
+L7 closing tease (current ends with "the trickiest of the standard gates..."): add a short paragraph re-elevating NAND:
+
+> *"Throughout this module, NAND has been your primitive — every gate you've built reduces to a wiring of NANDs. In the next lesson, NAND comes back to the foreground. We've used it to build computation; we're about to use it to build memory. The same little gate, two of them in a feedback loop, gives a computer the ability to remember. Watch closely — the trick is in the wiring, and it's the most surprising thing in this whole module."*
+
+L8 opener (current opens with "I'm going to show you how a computer remembers..."): add a sentence acknowledging the return:
+
+> *"In the last few lessons we built AND, OR, XOR by composing — using the gates we'd already built rather than reaching for raw NAND. For memory, we go back to NAND, because the cross-coupled latch is most economical at the primitive level. There's no contradiction — the principle is 'use the right level of abstraction for the job.' For computation, that's our higher-level gates. For memory, that's two raw NANDs in a feedback loop. Both are correct."*
+
+This costs two paragraphs of prose and resolves the inconsistency. No widget changes needed.
+
+## 6. L8 introduces pulse semantics without warning
+
+**Symptom:** every prior lesson uses *toggle* inputs — flip a switch, it stays. L8 suddenly uses *momentary* buttons — press, release, the latch remembers. The shift from "steady state" to "time-varying input" is unannounced. Learners reasonably ask: why are we switching from 0/1 to pulses?
+
+**Root cause:** the SR latch's semantics genuinely require pulses (steady-state inputs would either lock the latch in one state forever or — in the worst case — drive it into a metastable state). But the lesson body assumes pulses are obvious and doesn't introduce them as a new modality.
+
+**Recommended fix (prose):**
+
+Insert a paragraph at the start of L8, before the widget, explaining the modality shift explicitly:
+
+> *"One thing changes in this lesson: the inputs. Until now every switch we've drawn has been a* toggle *— flip it on, it stays on, flip it off, it stays off. Memory needs something different. The Set and Reset buttons in the next widget are* momentary*: press one, it briefly puts a 1 on its wire, and the moment you release it, the wire goes back to 0. The latch sees that brief 1, captures it, and holds the new state* after the pulse is gone*. This is the first lesson where time matters — where 'what just happened a moment ago' is a thing the circuit can react to. It's a small shift in how you read the diagram, and it's the foundation of everything time-varying that comes later (the clock, the stepper, the whole CPU)."*
+
+This also pre-loads the learner for L17 (clock signals) and L18 (stepper outputs), where time-varying signals become first-class. Currently L17 has to do that introduction cold; L8 can do half the work.
+
+**Bonus widget tweak:** add a tiny visual cue when a momentary button is being pressed — a brief flash of "1 on the wire" graphic — to make the pulse visible. Otherwise the learner clicks Set, sees the bulb light up, releases, and may not realise that the input wire went back to 0; they may think the wire is still high. Showing the wire's *actual* current value (not just the bulb) makes the "the input is gone but the memory remains" insight visceral.
+
+## 7. The leap from L8 to L9 is too large
+
+**Symptom:** L8 is a deep dive into the internals of one memory bit — feedback loops, pulse semantics, two NANDs you can almost individually trace. L9 then jumps to "eight memory bits in a row, share a set wire, here's the decimal readout." From "look how this latch works" to "now you have a byte" is too fast.
+
+**Root cause:** the curriculum lacks an abstraction step. The book itself slows down here: *Remember When* derives the memory bit, then *Eight Is Enough* explicitly says "we'll never look at the internal NANDs of a memory bit again — from here on it's a black box drawn as M with i/s/o pins." That's the missing move.
+
+**Recommended fix (prose + a small widget tweak):**
+
+Insert a "the memory bit becomes a building block" beat at the start of L9, before introducing the byte. Two paragraphs:
+
+> *"In the last lesson I built one memory bit and traced its NANDs in detail. From here on, I'm not going to draw those NANDs anymore. The memory bit is a building block now — I'll draw it as a single box labeled M, with three pins: input* i*, set* s*, and output* o*. When* s *pulses, whatever's at* i *gets locked in, and shows up at* o *until the next pulse changes it. That's all I need to know to use it.*"
+>
+> *"This zooming out — taking a thing you understand at the gate level, then treating it as a single block — is how computers actually get built. The next time we zoom in like we did in lesson 8 will be much later, only when we genuinely need to. For most of the rest of this curriculum, every new component is built from blocks you've already understood, without re-deriving them. The byte you're about to meet is the first example: eight memory bits, side by side, sharing one set wire."*
+
+**Bonus widget tweak:** in `TheByte`, render each of the eight stored cells as a labeled `M` block (matching the symbol from the new prose) rather than as an abstract bulb. The visual continuity with L8 — same pin names, same shape, but eight of them — makes the abstraction concrete. The learner sees that the byte is *literally* eight L8 widgets.
+
+**Effort:** small. Prose is ~150 words; the widget tweak is a relabeling of the SVG cells.
+
+## Summary of user-reported fixes
+
+In rough priority order (combining pedagogical impact with effort):
+
+1. **L8 pulse semantics paragraph** (item 6) — pure prose, fastest fix, resolves a real comprehension gap. ~30 minutes.
+2. **L9 abstraction-step paragraphs** (item 7) — pure prose, addresses the L8→L9 leap. ~30 minutes.
+3. **L7→L8 NAND-return paragraphs** (item 5) — pure prose, resolves the inconsistency. ~30 minutes.
+4. **Widget responsive layout sweep** (items 1 and 2 together) — viewBox + breakpoint stacking + sticky truth table. ~1 day.
+5. **"Show solution" button** (item 4) — small interaction-design pass plus the reveal/experiment-after flow. ~1 day.
+6. **Touch-device fixes for Circuit Builder** (item 3) — pointer-events migration plus selection-and-delete UI. ~2 days. Highest engineering effort but fixes a *blocker* on phones.
+
+Items 1–3 cost about half a working day total and resolve all the pedagogical complaints. Items 4–6 are a meaningful engineering investment but the curriculum isn't really shippable to mobile users without item 6, and item 4 is going to keep coming up the more learners hit it.
+
+If forced to pick a single biggest leverage point: **item 6** (touch fixes) unlocks the entire curriculum for phone-first learners, which is most of the world. The pedagogical fixes are essential but small.

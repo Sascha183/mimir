@@ -23,6 +23,48 @@ const TARGET_OR: TruthTable = {
   ],
 };
 
+// Reference solution: NOT each input, feed both into a NAND. By De Morgan,
+// NAND(NOT A, NOT B) == OR(A, B).
+const SOLUTION_OR: Circuit = {
+  gates: [
+    { id: 'sol-not-a', kind: 'NOT', position: { x: 200, y: 130 } },
+    { id: 'sol-not-b', kind: 'NOT', position: { x: 200, y: 230 } },
+    { id: 'sol-nand', kind: 'NAND', position: { x: 360, y: 180 } },
+  ],
+  wires: [
+    {
+      id: 'sol-w1',
+      from: { source: 'input', inputId: 'A' },
+      to: { gateId: 'sol-not-a', port: 'in1' },
+    },
+    {
+      id: 'sol-w2',
+      from: { source: 'input', inputId: 'B' },
+      to: { gateId: 'sol-not-b', port: 'in1' },
+    },
+    {
+      id: 'sol-w3',
+      from: { gateId: 'sol-not-a', port: 'out' },
+      to: { gateId: 'sol-nand', port: 'in1' },
+    },
+    {
+      id: 'sol-w4',
+      from: { gateId: 'sol-not-b', port: 'out' },
+      to: { gateId: 'sol-nand', port: 'in2' },
+    },
+    {
+      id: 'sol-w5',
+      from: { gateId: 'sol-nand', port: 'out' },
+      to: { source: 'output', outputId: 'Y' },
+    },
+  ],
+  inputs: [
+    { id: 'A', label: 'A', value: 0 },
+    { id: 'B', label: 'B', value: 0 },
+  ],
+  outputs: [{ id: 'Y', label: 'Y' }],
+};
+
 export default function OrFromNandAndNot() {
   const [solved, setSolved] = useState(false);
   const [hintShown, setHintShown] = useState(false);
@@ -40,15 +82,14 @@ export default function OrFromNandAndNot() {
         </p>
       </section>
 
-      <div className="overflow-x-auto pb-1">
-        <CircuitEditor
-          initialCircuit={INITIAL_CIRCUIT}
-          availableGates={['NAND', 'NOT']}
-          targetTruthTable={TARGET_OR}
-          onSolved={() => setSolved(true)}
-          storageKey="hciw:or-from-nand-and-not"
-        />
-      </div>
+      <CircuitEditor
+        initialCircuit={INITIAL_CIRCUIT}
+        availableGates={['NAND', 'NOT']}
+        targetTruthTable={TARGET_OR}
+        solutionCircuit={SOLUTION_OR}
+        onSolved={() => setSolved(true)}
+        storageKey="hciw:or-from-nand-and-not"
+      />
 
       <div className="mt-2">
         {hintShown ? (

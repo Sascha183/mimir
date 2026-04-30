@@ -179,16 +179,18 @@ export default function MemoryBit() {
         </p>
       </section>
 
-      <div className="overflow-x-auto pb-1">
-        <div
-          className="relative rounded-xl border border-apple-border bg-[#f5f5f7] p-4"
-          style={{ width: CANVAS_W + 32, height: CANVAS_H + 32 }}
-        >
+      <div
+        className="relative w-full rounded-xl border border-apple-border bg-[#f5f5f7]"
+        style={{
+          maxWidth: CANVAS_W + 32,
+          aspectRatio: `${CANVAS_W + 32} / ${CANVAS_H + 32}`,
+        }}
+      >
+        <div className="absolute inset-4">
           <svg
             viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-            width={CANVAS_W}
-            height={CANVAS_H}
-            className="block select-none text-apple-text"
+            preserveAspectRatio="xMidYMid meet"
+            className="block h-full w-full select-none text-apple-text"
             aria-hidden="true"
           >
             {/* Set line (button → top NAND in1) */}
@@ -276,16 +278,19 @@ export default function MemoryBit() {
             />
           </svg>
 
-          {/* Buttons (HTML overlay, on top of the SVG) */}
+          {/*
+            Buttons (HTML overlay). Positioned in percentages of the inner
+            (already padded) canvas so they track responsive scaling.
+          */}
           <PulseButton
             label="Set"
-            top={topIn1.y - 22 + 16}
+            topPct={(topIn1.y / CANVAS_H) * 100}
             pulsing={pulse === 'set'}
             onPress={() => triggerPulse('set')}
           />
           <PulseButton
             label="Reset"
-            top={botIn2.y - 22 + 16}
+            topPct={(botIn2.y / CANVAS_H) * 100}
             pulsing={pulse === 'reset'}
             onPress={() => triggerPulse('reset')}
           />
@@ -315,12 +320,13 @@ export default function MemoryBit() {
 
 function PulseButton({
   label,
-  top,
+  topPct,
   pulsing,
   onPress,
 }: {
   label: string;
-  top: number;
+  /** Vertical center as a percentage of the parent's height (the inset SVG box). */
+  topPct: number;
   pulsing: boolean;
   onPress: () => void;
 }) {
@@ -329,12 +335,12 @@ function PulseButton({
       type="button"
       onClick={onPress}
       aria-label={`${label} the memory bit`}
-      className={`absolute left-4 flex h-11 w-20 items-center justify-center rounded-lg border text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
+      className={`absolute left-0 flex h-11 w-20 -translate-y-1/2 items-center justify-center rounded-lg border text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
         pulsing
           ? 'border-apple-blue bg-apple-blue text-white shadow-md'
           : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
       }`}
-      style={{ top }}
+      style={{ top: `${topPct}%` }}
     >
       {label}
     </button>

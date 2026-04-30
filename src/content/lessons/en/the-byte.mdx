@@ -17,7 +17,11 @@ import TheByte from '../../../components/TheByte.tsx';
 
 In the last lesson I built a memory bit. Two NANDs in a loop, two buttons, one stored bit. It can answer a single yes-or-no question: was the last thing you told me a 1, or a 0?
 
-That is barely useful. With one bit I cannot store a letter. I cannot store a color. I cannot count past one. Real computers need to store numbers, text, images, sound — millions of distinct things. So I need more bits. A *lot* more bits.
+Before we go further: I am not going to draw those two NANDs again. From here on, the memory bit is a building block — a single labeled box, called **M**, with three pins. An input pin `i` for the bit you want to save, a set pin `s` to capture it, and an output pin `o` showing the saved value. When `s` pulses, whatever is at `i` gets locked in and shows up at `o` until the next pulse changes it. That is everything you need to know to use one. The cross-coupled NANDs are still in there; you have already understood them once; you do not need to re-derive them every time we use one.
+
+This zooming out — taking a thing you understand at the gate level, then treating it as a single block — is how computers actually get built. The next time we zoom back in to the gate level will be much later, only when we genuinely need to. For most of the rest of this curriculum, every new component is built from blocks you have already understood, without re-deriving them. The byte you are about to meet is the first example: eight memory bits, side by side, sharing one set wire.
+
+That is barely useful with just one. With one bit I cannot store a letter. I cannot store a color. I cannot count past one. Real computers need to store numbers, text, images, sound — millions of distinct things. So I need more bits. A *lot* more bits.
 
 The fix is simple, almost insultingly so: take many memory bits and put them next to each other. Eight memory bits in a row gives me 256 possible patterns — enough to label every letter of the alphabet, every digit, every punctuation mark, and still have room left over. Eight bits is the size that stuck. The book has a memorable line for it: a *bite* is a mouthful of food, a **byte** is the digital equivalent. From now on, when I say "byte", I mean exactly eight bits arranged side by side.
 

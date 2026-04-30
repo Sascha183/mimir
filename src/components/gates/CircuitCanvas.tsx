@@ -111,14 +111,13 @@ export default function CircuitCanvas({
 
   return (
     <div
-      className="relative mx-auto text-apple-text"
-      style={{ width, height }}
+      className="relative mx-auto w-full text-apple-text"
+      style={{ maxWidth: width, aspectRatio: `${width} / ${height}` }}
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        width={width}
-        height={height}
-        className="absolute inset-0 block"
+        preserveAspectRatio="xMidYMid meet"
+        className="absolute inset-0 h-full w-full block"
         aria-hidden="true"
       >
         {/*
@@ -182,14 +181,19 @@ export default function CircuitCanvas({
         ))}
       </svg>
 
+      {/*
+        HTML overlays positioned in percentages of the SVG coord space so they
+        track when the canvas is scaled down on narrow viewports. The
+        InputSwitch/OutputBulb themselves keep fixed pixel dimensions (so the
+        toggle stays fingertip-sized at any width).
+      */}
       {circuit.inputs.map((input, idx) => (
         <div
           key={input.id}
-          className="absolute"
+          className="absolute flex -translate-y-1/2 items-center"
           style={{
-            left: EDGE_PADDING,
-            top: inputCenterY(idx) - INPUT_TOTAL_HEIGHT / 2,
-            width: INPUT_WIDTH,
+            left: `${(EDGE_PADDING / width) * 100}%`,
+            top: `${(inputCenterY(idx) / height) * 100}%`,
           }}
         >
           <InputSwitch
@@ -203,11 +207,10 @@ export default function CircuitCanvas({
       {circuit.outputs.map((output, idx) => (
         <div
           key={output.id}
-          className="absolute"
+          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center"
           style={{
-            left: width - EDGE_PADDING - OUTPUT_WIDTH,
-            top: outputCenterY(idx) - OUTPUT_TOTAL_HEIGHT / 2,
-            width: OUTPUT_WIDTH,
+            left: `${((width - EDGE_PADDING - OUTPUT_WIDTH / 2) / width) * 100}%`,
+            top: `${(outputCenterY(idx) / height) * 100}%`,
           }}
         >
           <OutputBulb value={outputValues[output.id] ?? 0} label={output.label} />

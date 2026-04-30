@@ -32,7 +32,18 @@
       "Bash(curl -s http://localhost:4321/lessons/the-byte/ -o .tmp-verify/the-byte.html)",
       "Bash(curl -s http://localhost:4321/de/lessons/the-byte/ -o .tmp-verify/the-byte-de.html)",
       "Bash(curl -s http://localhost:4321/tracks/it-basics/ -o .tmp-verify/track.html)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(pdftotext -layout \"C:/Projects/LearningIT/references/But How Do It Know_ - The Basic - J Clark Scott.pdf\" \"C:/Projects/LearningIT/references/book.txt\")",
+      "Bash(grep -n -i -E \"^\\(Just the Facts|Just a Little Bit|Eight Is Enough|Codes|The Magic Bus|First Half|The Clock|Step by Step|The First Great Invention|The Second Great Invention|The Third Great Invention|Doing Something Useful|Logic$|The Arithmetic and Logic Unit|A Few More Words|The Outside World|Hardware and Software|The Disk|The Display Screen|The Keyboard|Numbers$|Addresses$|Codes$|Boots|Firmware|Programs|Errors|Computer Diseases|Philosophy|Full Disclosure|Digital vs|I Lied|Languages|The File System|The Operating System|Ta Daa|That.s All|Excuse Me|Another Code|The Final Word|Another Way to Jump|The Clear Flags|Hardware and Software|Back to the Byte\\)\" \"C:/Projects/LearningIT/references/book.txt\")",
+      "Bash(grep -n -B1 -A1 -E \"^\\(Codes|Numbers|Addresses|Logic|Doing Something Useful|A Few More Words|Eight Is Enough|Back to the Byte\\)$\" \"C:/Projects/LearningIT/references/book.txt\")",
+      "Bash(grep *)",
+      "Bash(echo \"Dev server PID: $!\")",
+      "Bash(curl -s -o /dev/null -w \"and-from-nand: %{http_code}\\\\n\" http://localhost:4321/lessons/and-from-nand)",
+      "Bash(curl -s -o /dev/null -w \"or-from-nand: %{http_code}\\\\n\" http://localhost:4321/lessons/or-from-nand)",
+      "Bash(curl -s -o /dev/null -w \"xor-from-primitives: %{http_code}\\\\n\" http://localhost:4321/lessons/xor-from-primitives)",
+      "Bash(curl -s http://localhost:4321/lessons/xor-from-primitives)",
+      "Bash(curl -s http://localhost:4321/lessons/and-from-nand)",
+      "Bash(kill 631)"
     ]
   }
 }
