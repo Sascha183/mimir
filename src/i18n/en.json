@@ -30,7 +30,12 @@
     "allTracks": "All tracks",
     "moduleHardwareBasics": "Hardware Basics",
     "moduleGeneral": "Lessons",
-    "minutesShort": "min"
+    "minutesShort": "min",
+    "module1Title": "Module 1 — Hardware Fundamentals",
+    "module2Title": "Module 2 — From Bits to RAM",
+    "module3Title": "Module 3 — The CPU",
+    "moduleLessonCountSingular": "{count} lesson",
+    "moduleLessonCountPlural": "{count} lessons"
   },
   "lesson": {
     "duration": "min read",

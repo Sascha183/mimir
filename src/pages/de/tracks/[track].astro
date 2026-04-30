@@ -47,8 +47,26 @@ const { lessons } = Astro.props as { lessons: CollectionEntry<'lessons'>[] };
 const title = t(trackTitleKeys[track], locale);
 const description = t(trackDescriptionKeys[track], locale);
 
+/*
+ * Group lessons by curriculum module via order range; see the English
+ * track page for the rationale (CLAUDE.md defines the boundaries).
+ */
+function moduleKeyForOrder(order: number): string {
+  if (order >= 1 && order <= 8) return 'module-1';
+  if (order >= 9 && order <= 14) return 'module-2';
+  if (order >= 15 && order <= 26) return 'module-3';
+  return '_general';
+}
+
+const moduleTitleKeys: Record<string, string> = {
+  'module-1': 'trackPage.module1Title',
+  'module-2': 'trackPage.module2Title',
+  'module-3': 'trackPage.module3Title',
+  '_general': 'trackPage.moduleGeneral',
+};
+
 const grouped = lessons.reduce<Record<string, CollectionEntry<'lessons'>[]>>((acc, lesson) => {
-  const key = lesson.data.module ?? '_general';
+  const key = moduleKeyForOrder(lesson.data.order);
   (acc[key] ||= []).push(lesson);
   return acc;
 }, {});
@@ -58,13 +76,13 @@ for (const key of Object.keys(grouped)) {
 }
 
 const moduleOrder = Object.entries(grouped)
-  .map(([key, items]) => ({ key, firstOrder: items[0].data.order, items }))
+  .map(([key, items]) => ({
+    key,
+    title: t(moduleTitleKeys[key] ?? 'trackPage.moduleGeneral', locale),
+    firstOrder: items[0].data.order,
+    items,
+  }))
   .sort((a, b) => a.firstOrder - b.firstOrder);
-
-const moduleLabels: Record<string, string> = {
-  'hardware-basics': t('trackPage.moduleHardwareBasics', locale),
-  '_general': t('trackPage.moduleGeneral', locale),
-};
 ---
 
 <!doctype html>
@@ -109,37 +127,68 @@ const moduleLabels: Record<string, string> = {
         {description}
       </p>
 
-      <div class="mt-20 space-y-16">
+      <div class="mt-20 space-y-6" data-track-modules data-track-slug={track}>
         {
-          moduleOrder.map(({ key, items }) => (
-            <section>
-              <h2 class="mb-6 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-                {moduleLabels[key] ?? key}
-              </h2>
-              <ol class="divide-y divide-apple-border/70 border-y border-apple-border/70">
-                {items.map((lesson) => (
-                  <li>
-                    <a
-                      href={localizedLessonHref(stripLocaleSlug(lesson.slug), locale)}
-                      class="group flex items-baseline justify-between gap-6 py-5 transition-colors duration-300 hover:text-apple-blue motion-reduce:transition-none"
+          moduleOrder.map(({ key, title: moduleTitle, items }) => {
+            const count = items.length;
+            const countLabel = t(
+              count === 1
+                ? 'trackPage.moduleLessonCountSingular'
+                : 'trackPage.moduleLessonCountPlural',
+              locale,
+              { count },
+            );
+            return (
+              <details
+                open
+                class="track-module group/module border-t border-apple-border/70 [&:last-child]:border-b"
+                data-module-key={key}
+              >
+                <summary class="track-module-summary flex cursor-pointer list-none items-baseline justify-between gap-4 py-5 transition-colors duration-200 hover:text-apple-text motion-reduce:transition-none">
+                  <span class="flex items-baseline gap-3">
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 16 16"
+                      class="track-module-chevron h-3 w-3 flex-shrink-0 self-center transition-transform duration-300 motion-reduce:transition-none"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
                     >
-                      <span class="flex items-baseline gap-5">
-                        <span class="font-mono text-sm text-apple-text-secondary">
-                          {String(lesson.data.order).padStart(2, '0')}
+                      <polyline points="4,6 8,10 12,6" />
+                    </svg>
+                    <span class="text-xl font-semibold tracking-tight text-apple-text">
+                      {moduleTitle}
+                    </span>
+                  </span>
+                  <span class="text-sm text-apple-text-secondary">{countLabel}</span>
+                </summary>
+                <ol class="divide-y divide-apple-border/70 border-t border-apple-border/70 pl-6">
+                  {items.map((lesson) => (
+                    <li>
+                      <a
+                        href={localizedLessonHref(stripLocaleSlug(lesson.slug), locale)}
+                        class="group flex items-baseline justify-between gap-6 py-5 transition-colors duration-300 hover:text-apple-blue motion-reduce:transition-none"
+                      >
+                        <span class="flex items-baseline gap-5">
+                          <span class="font-mono text-sm text-apple-text-secondary">
+                            {String(lesson.data.order).padStart(2, '0')}
+                          </span>
+                          <span class="text-lg font-medium tracking-tight">
+                            {lesson.data.title}
+                          </span>
                         </span>
-                        <span class="text-lg font-medium tracking-tight">
-                          {lesson.data.title}
+                        <span class="text-sm text-apple-text-secondary">
+                          {lesson.data.duration} {t('trackPage.minutesShort', locale)}
                         </span>
-                      </span>
-                      <span class="text-sm text-apple-text-secondary">
-                        {lesson.data.duration} {t('trackPage.minutesShort', locale)}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ))
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            );
+          })
         }
       </div>
     </main>
@@ -149,5 +198,54 @@ const moduleLabels: Record<string, string> = {
         {t('footer.text', locale)}
       </div>
     </footer>
+
+    <style is:global>
+      .track-module > summary { list-style: none; }
+      .track-module > summary::-webkit-details-marker { display: none; }
+      .track-module:not([open]) .track-module-chevron {
+        transform: rotate(-90deg);
+      }
+    </style>
+
+    <script is:inline>
+      (function () {
+        var container = document.querySelector('[data-track-modules]');
+        if (!container) return;
+        var trackSlug = container.getAttribute('data-track-slug') || 'default';
+        var storageKey = 'hciw:track:' + trackSlug + ':modules';
+
+        function readState() {
+          try {
+            var raw = localStorage.getItem(storageKey);
+            if (!raw) return {};
+            var parsed = JSON.parse(raw);
+            return (parsed && typeof parsed === 'object') ? parsed : {};
+          } catch (_) {
+            return {};
+          }
+        }
+
+        function writeState(state) {
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+          } catch (_) {
+            /* private mode — toggle still works for the session */
+          }
+        }
+
+        var state = readState();
+        var modules = container.querySelectorAll('details.track-module');
+        modules.forEach(function (m) {
+          var key = m.getAttribute('data-module-key');
+          if (!key) return;
+          if (state[key] === true) m.removeAttribute('open');
+          else if (state[key] === false) m.setAttribute('open', '');
+          m.addEventListener('toggle', function () {
+            state[key] = !m.open;
+            writeState(state);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

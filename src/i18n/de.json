@@ -30,7 +30,12 @@
     "allTracks": "Alle Lernpfade",
     "moduleHardwareBasics": "Hardware-Grundlagen",
     "moduleGeneral": "Lektionen",
-    "minutesShort": "Min."
+    "minutesShort": "Min.",
+    "module1Title": "Modul 1 — Hardware-Grundlagen",
+    "module2Title": "Modul 2 — Von Bits zu RAM",
+    "module3Title": "Modul 3 — Die CPU",
+    "moduleLessonCountSingular": "{count} Lektion",
+    "moduleLessonCountPlural": "{count} Lektionen"
   },
   "lesson": {
     "duration": "Min. Lesezeit",
