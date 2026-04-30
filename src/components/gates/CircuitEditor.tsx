@@ -60,10 +60,10 @@ const PORT_R = 5;
 const PORT_HIT_R = 14; // bigger hit area for finger taps
 
 // Distance (in SVG units) from the visible edge of an input switch / output
-// bulb to the port circle that lives at the boundary with the canvas. Large
-// enough that the port circle is clearly visible and its hit area sits on
-// the canvas side of the HTML overlay rather than on top of the button/bulb.
-const EDGE_PORT_GAP = 14;
+// bulb to the port circle that lives at the boundary with the canvas. Sized
+// so the port hit area (PORT_HIT_R = 14) ends up several SVG units past the
+// HTML overlay's bounding box, with no overlap at the edge.
+const EDGE_PORT_GAP = 20;
 
 // Two gates count as "overlapping" if their centers are within these
 // distances. The gate body is ~32x32; this leaves a small breathing margin.
@@ -905,12 +905,7 @@ export default function CircuitEditor({
               return (
                 <div
                   key={input.id}
-                  // pointer-events-none on the wrapper means clicks fall
-                  // through to the SVG behind it (so port circles right at
-                  // the wrapper's edge stay clickable). The InputSwitch's
-                  // own button has pointer-events: auto from the browser
-                  // default and still receives toggles normally.
-                  className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                   style={{
                     left: `${((EDGE_PADDING + INPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
                     top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
@@ -932,7 +927,7 @@ export default function CircuitEditor({
               return (
                 <div
                   key={output.id}
-                  className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                   style={{
                     left: `${((CANVAS_W - EDGE_PADDING - OUTPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
                     top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
