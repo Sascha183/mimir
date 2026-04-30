@@ -45,7 +45,9 @@
     "lessonsInTrack": "Lessons in {track}",
     "onThisPage": "On this page",
     "lessonsAriaLabel": "Lessons in this track",
-    "lessonNavAriaLabel": "Lesson navigation"
+    "lessonNavAriaLabel": "Lesson navigation",
+    "collapseSidebar": "Collapse lesson sidebar",
+    "expandSidebar": "Expand lesson sidebar"
   },
   "about": {
     "title": "About — How Computers Work",

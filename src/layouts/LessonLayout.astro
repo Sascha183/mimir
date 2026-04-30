@@ -121,19 +121,56 @@ const nextRawSlug = next ? stripLocaleSlug(next.slug) : null;
         </div>
       </details>
 
-      <div class="grid grid-cols-1 gap-12 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_200px] lg:gap-16">
-        <!-- LEFT: sticky lesson nav (md+) -->
+      <div
+        id="lesson-grid"
+        data-sidebar-collapsed="false"
+        class="lesson-grid grid grid-cols-1 gap-12 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_200px] lg:gap-16"
+      >
+        <!--
+          LEFT: sticky lesson nav (md+).
+          The grid column width and the inner content's visibility are
+          controlled by `data-sidebar-collapsed` on the grid above; see the
+          <style> block at the bottom of this layout.
+        -->
         <aside class="hidden md:block">
           <div class="sticky top-24">
-            <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
-              {trackLabel}
-            </p>
-            <LessonNav
-              moduleOrder={moduleOrder}
-              currentSlug={lesson.slug}
-              moduleLabels={moduleLabels}
-              locale={locale}
-            />
+            <button
+              type="button"
+              data-sidebar-toggle
+              aria-controls="lesson-sidebar-content"
+              aria-expanded="true"
+              aria-label={t('lesson.collapseSidebar', locale)}
+              class="lesson-sidebar-toggle mb-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-apple-text-secondary transition-colors duration-200 hover:bg-apple-surface hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                class="lesson-sidebar-chevron h-4 w-4 transition-transform duration-300 motion-reduce:transition-none"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <!-- Chevron points left when expanded ("collapse me"); CSS
+                     rotates it 180° when collapsed so it points right. -->
+                <polyline points="12,4 6,10 12,16" />
+              </svg>
+            </button>
+            <div
+              id="lesson-sidebar-content"
+              class="lesson-sidebar-content transition-opacity duration-300 motion-reduce:transition-none"
+            >
+              <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
+                {trackLabel}
+              </p>
+              <LessonNav
+                moduleOrder={moduleOrder}
+                currentSlug={lesson.slug}
+                moduleLabels={moduleLabels}
+                locale={locale}
+              />
+            </div>
           </div>
         </aside>
 
@@ -266,10 +303,95 @@ const nextRawSlug = next ? stripLocaleSlug(next.slug) : null;
       </div>
     </footer>
 
-    <style>
+    <style is:global>
       /* Hide the default disclosure triangle on the mobile lesson-nav <details>. */
       .lesson-nav-mobile > summary { list-style: none; }
       .lesson-nav-mobile > summary::-webkit-details-marker { display: none; }
+
+      /*
+        Collapsible lesson sidebar.
+        When the grid is marked collapsed, the left column shrinks to a
+        thin strip just wide enough for the toggle button, and the sidebar
+        content (track label + nav) fades out. The grid-template-columns
+        transition is supported in modern Chromium / Safari; older browsers
+        fall back to an instant snap.
+      */
+      @media (min-width: 768px) {
+        .lesson-grid {
+          transition: grid-template-columns 300ms ease;
+        }
+        .lesson-grid[data-sidebar-collapsed="true"] {
+          grid-template-columns: 40px minmax(0, 1fr);
+        }
+      }
+      @media (min-width: 1024px) {
+        .lesson-grid[data-sidebar-collapsed="true"] {
+          grid-template-columns: 40px minmax(0, 1fr) 200px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .lesson-grid { transition: none; }
+      }
+
+      .lesson-grid[data-sidebar-collapsed="true"] .lesson-sidebar-content {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .lesson-grid[data-sidebar-collapsed="true"] .lesson-sidebar-chevron {
+        transform: rotate(180deg);
+      }
     </style>
+
+    <script
+      is:inline
+      data-i18n-collapse={t('lesson.collapseSidebar', locale)}
+      data-i18n-expand={t('lesson.expandSidebar', locale)}
+    >
+      // Apply persisted sidebar state pre-paint, then bind the toggle.
+      (function () {
+        var grid = document.getElementById('lesson-grid');
+        if (!grid) return;
+        var script = document.currentScript;
+        var i18nCollapse = script
+          ? script.getAttribute('data-i18n-collapse')
+          : 'Collapse lesson sidebar';
+        var i18nExpand = script
+          ? script.getAttribute('data-i18n-expand')
+          : 'Expand lesson sidebar';
+
+        function readState() {
+          try {
+            return localStorage.getItem('hciw:sidebar:collapsed') === 'true';
+          } catch (_) {
+            return false;
+          }
+        }
+
+        function applyState(collapsed) {
+          grid.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
+          var btns = grid.querySelectorAll('button[data-sidebar-toggle]');
+          btns.forEach(function (btn) {
+            btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            btn.setAttribute('aria-label', collapsed ? i18nExpand : i18nCollapse);
+          });
+        }
+
+        applyState(readState());
+
+        grid.addEventListener('click', function (e) {
+          var target = e.target;
+          var btn = target && target.closest && target.closest('button[data-sidebar-toggle]');
+          if (!btn) return;
+          var next = grid.getAttribute('data-sidebar-collapsed') !== 'true';
+          applyState(next);
+          try {
+            localStorage.setItem('hciw:sidebar:collapsed', next ? 'true' : 'false');
+          } catch (_) {
+            /* private mode — toggle still works for the session */
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

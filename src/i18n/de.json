@@ -45,7 +45,9 @@
     "lessonsInTrack": "Lektionen in {track}",
     "onThisPage": "Auf dieser Seite",
     "lessonsAriaLabel": "Lektionen in diesem Lernpfad",
-    "lessonNavAriaLabel": "Lektionsnavigation"
+    "lessonNavAriaLabel": "Lektionsnavigation",
+    "collapseSidebar": "Lektions-Seitenleiste einklappen",
+    "expandSidebar": "Lektions-Seitenleiste ausklappen"
   },
   "about": {
     "title": "Über — Wie Computer funktionieren",
