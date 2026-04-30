@@ -59,6 +59,12 @@ const GRID = 20; // gate positions snap to this on drop / drag-end
 const PORT_R = 5;
 const PORT_HIT_R = 14; // bigger hit area for finger taps
 
+// Distance (in SVG units) from the visible edge of an input switch / output
+// bulb to the port circle that lives at the boundary with the canvas. Large
+// enough that the port circle is clearly visible and its hit area sits on
+// the canvas side of the HTML overlay rather than on top of the button/bulb.
+const EDGE_PORT_GAP = 14;
+
 // Two gates count as "overlapping" if their centers are within these
 // distances. The gate body is ~32x32; this leaves a small breathing margin.
 const MIN_GAP_X = 40;
@@ -324,13 +330,22 @@ export default function CircuitEditor({
   function refToPoint(ref: PortRef): { x: number; y: number } {
     if ('source' in ref) {
       if (ref.source === 'input') {
+        // Port sits ~14 SVG units to the right of the input switch's right
+        // edge, on the canvas side. This keeps the port circle visible and
+        // its hit area off the HTML overlay so taps go to the SVG.
         const idx = circuit.inputs.findIndex((i) => i.id === ref.inputId);
-        return { x: EDGE_PADDING + INPUT_WIDTH, y: inputCenterY(idx) };
+        return {
+          x: EDGE_PADDING + INPUT_WIDTH + EDGE_PORT_GAP,
+          y: inputCenterY(idx),
+        };
       }
+      // Output port: ~14 SVG units to the left of the bulb body, vertically
+      // centered on the bulb. The bulb's decorative cord at the top no longer
+      // serves as the wire entry point; the wire ends at this port instead.
       const idx = circuit.outputs.findIndex((o) => o.id === ref.outputId);
       return {
-        x: CANVAS_W - EDGE_PADDING - OUTPUT_WIDTH / 2,
-        y: outputCenterY(idx) - OUTPUT_TOTAL_HEIGHT / 2,
+        x: CANVAS_W - EDGE_PADDING - OUTPUT_WIDTH - EDGE_PORT_GAP,
+        y: outputCenterY(idx),
       };
     }
     const gate = circuit.gates.find((g) => g.id === ref.gateId);
@@ -890,7 +905,12 @@ export default function CircuitEditor({
               return (
                 <div
                   key={input.id}
-                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  // pointer-events-none on the wrapper means clicks fall
+                  // through to the SVG behind it (so port circles right at
+                  // the wrapper's edge stay clickable). The InputSwitch's
+                  // own button has pointer-events: auto from the browser
+                  // default and still receives toggles normally.
+                  className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                   style={{
                     left: `${((EDGE_PADDING + INPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
                     top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
@@ -912,7 +932,7 @@ export default function CircuitEditor({
               return (
                 <div
                   key={output.id}
-                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                  className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                   style={{
                     left: `${((CANVAS_W - EDGE_PADDING - OUTPUT_WIDTH / 2) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
                     top: `${(cy / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
