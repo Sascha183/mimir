@@ -115,8 +115,8 @@ const REG_CENTER = (i: number) => REG_COL_WIDTH / 2 + i * REG_COL_WIDTH;
 const INPUTS_DROP_X = ROW_WIDTH / 2;
 const POSITIONS = [7, 6, 5, 4, 3, 2, 1, 0] as const;
 
-const wireOff = '#86868b';
-const wireOn = '#0071e3';
+const wireOff = 'rgb(var(--apple-text-secondary))';
+const wireOn = 'rgb(var(--apple-blue))';
 const wireConflict = '#dc2626';
 
 export default function TheBus() {
@@ -254,7 +254,7 @@ export default function TheBus() {
               x={INPUTS_DROP_X + 8}
               y={20}
               fontSize={11}
-              fill="#6e6e73"
+              style={{ fill: "rgb(var(--apple-text-secondary))" }}
               stroke="none"
             >
               inputs → bus
@@ -285,7 +285,7 @@ export default function TheBus() {
               y={14}
               fontSize={12}
               fontWeight={600}
-              fill="#6e6e73"
+              style={{ fill: "rgb(var(--apple-text-secondary))" }}
               stroke="none"
             >
               bus
@@ -350,7 +350,7 @@ export default function TheBus() {
             <button
               type="button"
               onClick={reset}
-              className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+              className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
             >
               Reset all
             </button>
@@ -374,7 +374,7 @@ export default function TheBus() {
             </p>
           </div>
         ) : (
-          <div className="mx-auto inline-block rounded-xl border border-apple-border bg-white px-5 py-3">
+          <div className="mx-auto inline-block rounded-xl border border-apple-border bg-apple-surface px-5 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
               Bus
             </p>
@@ -426,7 +426,7 @@ function RegisterBlock({
   const decimal = bitsToNumber(stored);
   return (
     <div
-      className={`mx-1 flex flex-col items-center rounded-xl border bg-white px-3 py-3 transition-all duration-200 motion-reduce:transition-none ${
+      className={`mx-1 flex flex-col items-center rounded-xl border bg-apple-surface px-3 py-3 transition-all duration-200 motion-reduce:transition-none ${
         pulsing ? 'border-apple-blue ring-2 ring-apple-blue ring-offset-2' : 'border-apple-border'
       }`}
     >
@@ -463,7 +463,7 @@ function RegisterBlock({
           className={`rounded-md border px-3 py-1 text-xs font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
             pulsing
               ? 'border-apple-blue bg-apple-blue text-white'
-              : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+              : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
           } ${conflict ? 'cursor-not-allowed opacity-40' : ''}`}
         >
           Set

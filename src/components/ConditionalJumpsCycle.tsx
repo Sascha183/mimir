@@ -166,7 +166,7 @@ export default function ConditionalJumpsCycle() {
   return (
     <div className="not-prose mx-auto my-12 w-full max-w-[860px] text-apple-text">
       {/* Program selector */}
-      <div className="rounded-xl border border-apple-border bg-white p-4">
+      <div className="rounded-xl border border-apple-border bg-apple-surface p-4">
         <div className="text-center text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
           Scenario
         </div>
@@ -187,7 +187,7 @@ export default function ConditionalJumpsCycle() {
                 className={`rounded-lg border px-3 py-2 font-mono text-xs font-semibold tracking-wide transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
                   active
                     ? 'border-apple-blue bg-apple-blue text-white'
-                    : 'border-apple-border bg-white text-apple-text-secondary hover:text-apple-text'
+                    : 'border-apple-border bg-apple-surface text-apple-text-secondary hover:text-apple-text'
                 }`}
               >
                 {p.name}
@@ -201,7 +201,7 @@ export default function ConditionalJumpsCycle() {
       </div>
 
       {/* Program listing */}
-      <div className="mt-5 rounded-xl border border-apple-border bg-white p-4">
+      <div className="mt-5 rounded-xl border border-apple-border bg-apple-surface p-4">
         <div className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
           Program in RAM
         </div>
@@ -276,7 +276,7 @@ export default function ConditionalJumpsCycle() {
           className={`rounded-lg border px-5 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
             running
               ? 'border-apple-blue bg-apple-blue text-white shadow-md'
-              : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+              : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
           }`}
         >
           {running ? 'Pause' : 'Run'}
@@ -285,7 +285,7 @@ export default function ConditionalJumpsCycle() {
           type="button"
           onClick={step}
           disabled={running}
-          className="rounded-lg border border-apple-border bg-white px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-lg border border-apple-border bg-apple-surface px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Step
         </button>
@@ -293,14 +293,14 @@ export default function ConditionalJumpsCycle() {
           type="button"
           onClick={stepInstruction}
           disabled={running}
-          className="rounded-lg border border-apple-border bg-white px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-lg border border-apple-border bg-apple-surface px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Step instruction
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset
         </button>

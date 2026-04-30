@@ -132,7 +132,7 @@ export default function TheDecoder() {
               className={`flex items-center gap-4 rounded-lg border px-4 py-3 transition-all duration-200 motion-reduce:transition-none ${
                 isActive
                   ? 'border-apple-blue bg-apple-blue/10 shadow-sm'
-                  : 'border-apple-border bg-white opacity-70'
+                  : 'border-apple-border bg-apple-surface opacity-70'
               }`}
             >
               {/* Combination label (the AND watches for this exact pattern) */}
@@ -150,7 +150,7 @@ export default function TheDecoder() {
                 className={`flex h-8 w-12 items-center justify-center rounded-r-full border font-mono text-xs font-semibold transition-all duration-200 motion-reduce:transition-none ${
                   isActive
                     ? 'border-apple-blue bg-apple-blue text-white'
-                    : 'border-apple-border bg-white text-apple-text-secondary'
+                    : 'border-apple-border bg-apple-surface text-apple-text-secondary'
                 }`}
               >
                 AND
@@ -180,7 +180,7 @@ export default function TheDecoder() {
                 className={`ml-auto flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all duration-200 motion-reduce:transition-none ${
                   isActive
                     ? 'border-amber-400 bg-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.55)]'
-                    : 'border-apple-border bg-white'
+                    : 'border-apple-border bg-apple-surface'
                 }`}
               />
 

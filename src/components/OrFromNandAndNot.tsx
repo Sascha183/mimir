@@ -93,7 +93,7 @@ export default function OrFromNandAndNot() {
 
       <div className="mt-2">
         {hintShown ? (
-          <p className="rounded-md border border-apple-border/60 bg-white/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
+          <p className="rounded-md border border-apple-border/60 bg-apple-surface/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
             Think about the symmetry. A NAND is &ldquo;not (A and B)&rdquo;. So
             what would happen if you fed it &ldquo;not A&rdquo; and &ldquo;not
             B&rdquo; instead? Try a NOT on each input before the NAND.

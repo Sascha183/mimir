@@ -1,0 +1,33 @@
+---
+// ThemeBoot — included near the top of every page's <head>.
+// Pulls in the CSS-var theme tokens AND emits a tiny pre-paint script that
+// applies `.dark` to <html> before the first paint, eliminating the
+// flash-of-wrong-theme on cold loads. Runs inline because the CSP allows
+// inline scripts (see public/_headers); a deferred script would paint first.
+import '../styles/theme.css';
+---
+
+<script is:inline>
+  // Resolve the theme synchronously, before paint. Order of preference:
+  //   1) explicit user choice persisted in localStorage `hciw-theme`
+  //      (values: 'dark' | 'light')
+  //   2) the OS-level prefers-color-scheme media query (first visit only)
+  // The choice is written to <html class="dark"> so all CSS variables
+  // resolve to the right palette as the document parses.
+  (function () {
+    try {
+      var saved = localStorage.getItem('hciw-theme');
+      var prefersDark =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = saved ? saved === 'dark' : prefersDark;
+      if (dark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (_) {
+      // localStorage may be disabled (private mode) — silently fall back to light.
+    }
+  })();
+</script>

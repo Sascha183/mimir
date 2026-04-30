@@ -272,7 +272,7 @@ function ToggleSwitch({
       }`}
     >
       <span
-        className={`inline-block h-7 w-7 transform rounded-full bg-white shadow transition-transform duration-200 motion-reduce:transition-none ${
+        className={`inline-block h-7 w-7 transform rounded-full bg-apple-surface shadow transition-transform duration-200 motion-reduce:transition-none ${
           isOn ? 'translate-x-8' : 'translate-x-1'
         }`}
       />

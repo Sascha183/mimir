@@ -1,5 +1,6 @@
 ---
 import Editor from '../../components/gates/CircuitEditor.tsx';
+import ThemeBoot from '../../components/ThemeBoot.astro';
 import type { Circuit, TruthTable } from '../../lib/gates/types';
 
 // Demo circuit: NAND → NOT chained, which is an AND. Lets us see two gates,
@@ -44,6 +45,7 @@ const targetTruthTable: TruthTable = {
     <meta name="robots" content="noindex" />
     <title>CircuitEditor preview</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <ThemeBoot />
   </head>
   <body class="min-h-screen font-sans">
     <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">

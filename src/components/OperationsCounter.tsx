@@ -36,8 +36,16 @@ const DOT_R = 3;
 const CANVAS_W = COLS * CELL;
 const CANVAS_H = ROWS * CELL;
 
-const COLOR_LIT = '#0071e3'; // apple-blue
-const COLOR_UNLIT = '#d2d2d7'; // apple-border
+// Resolve theme tokens at draw time. Canvas doesn't honor CSS variables, so
+// we read the resolved RGB values off the document element and reconstruct
+// concrete `rgb()` strings. This automatically picks up dark/light mode.
+function readColor(varName: string): string {
+  if (typeof window === 'undefined') return '#0071e3'; // SSR fallback
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
+  return raw ? `rgb(${raw})` : '#0071e3';
+}
 
 type Speed = 1 | 1000 | 1000000;
 const SPEEDS: Speed[] = [1, 1000, 1000000];
@@ -289,8 +297,9 @@ export default function OperationsCounter() {
       drawAllDots(ctx, newLit);
     } else {
       // No wrap, no full grid crossed: light up only the newly-crossed dots.
+      const litColor = readColor('--apple-blue');
       for (let i = lastLitRef.current; i < newLit; i++) {
-        drawDot(ctx, i, COLOR_LIT);
+        drawDot(ctx, i, litColor);
       }
     }
 
@@ -350,7 +359,7 @@ export default function OperationsCounter() {
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset
         </button>
@@ -382,7 +391,7 @@ function SpeedButton({
       className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
         active
           ? 'bg-apple-blue text-white'
-          : 'border border-apple-border bg-white text-apple-text hover:border-apple-text-secondary'
+          : 'border border-apple-border bg-apple-surface text-apple-text hover:border-apple-text-secondary'
       }`}
     >
       {children}
@@ -394,8 +403,10 @@ function SpeedButton({
 
 function drawAllDots(ctx: CanvasRenderingContext2D, lit: number) {
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+  const litColor = readColor('--apple-blue');
+  const unlitColor = readColor('--apple-border');
   for (let i = 0; i < GRID_TOTAL; i++) {
-    drawDot(ctx, i, i < lit ? COLOR_LIT : COLOR_UNLIT);
+    drawDot(ctx, i, i < lit ? litColor : unlitColor);
   }
 }
 

@@ -28,7 +28,7 @@ export default function Wire({ from, to, active = false }: Props) {
       strokeLinecap="round"
       className="transition-all duration-300 motion-reduce:transition-none"
       style={{
-        stroke: active ? '#0071e3' : '#6e6e73',
+        stroke: active ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text-secondary))',
         strokeWidth: active ? 2 : 1.25,
       }}
     />

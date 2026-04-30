@@ -101,7 +101,7 @@ export default function AndFromNandAndNot() {
 
       <div className="mt-2">
         {hintShown ? (
-          <p className="rounded-md border border-apple-border/60 bg-white/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
+          <p className="rounded-md border border-apple-border/60 bg-apple-surface/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
             Think back to the last lesson. A NAND already gives you &ldquo;not
             AND&rdquo;. So if you flip a NAND&rsquo;s output one more time
             &hellip;

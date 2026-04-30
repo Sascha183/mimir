@@ -43,7 +43,18 @@
       "Bash(curl -s -o /dev/null -w \"xor-from-primitives: %{http_code}\\\\n\" http://localhost:4321/lessons/xor-from-primitives)",
       "Bash(curl -s http://localhost:4321/lessons/xor-from-primitives)",
       "Bash(curl -s http://localhost:4321/lessons/and-from-nand)",
-      "Bash(kill 631)"
+      "Bash(kill 631)",
+      "Bash(perl -i -pe 's/'\\\\''#0071e3'\\\\''/'\\\\''rgb\\(var\\(--apple-blue\\)\\)'\\\\''/g' src/components/MemoryBit.tsx src/components/gates/CircuitCanvas.tsx src/components/gates/CircuitEditor.tsx src/components/gates/Wire.tsx src/components/TheBus.tsx src/components/TheByte.tsx src/components/TheRegister.tsx src/components/OperationsCounter.tsx)",
+      "Bash(perl -i -pe 's/'\\\\''#1d1d1f'\\\\''/'\\\\''rgb\\(var\\(--apple-text\\)\\)'\\\\''/g' src/components/MemoryBit.tsx src/components/gates/CircuitCanvas.tsx src/components/gates/CircuitEditor.tsx)",
+      "Bash(perl -i -pe 's/'\\\\''#6e6e73'\\\\''/'\\\\''rgb\\(var\\(--apple-text-secondary\\)\\)'\\\\''/g' src/components/gates/Wire.tsx)",
+      "Bash(perl -i -pe 's/'\\\\''#86868b'\\\\''/'\\\\''rgb\\(var\\(--apple-text-secondary\\)\\)'\\\\''/g' src/components/TheBus.tsx src/components/TheByte.tsx src/components/TheRegister.tsx)",
+      "Bash(perl -i -pe 's/'\\\\''#d2d2d7'\\\\''/'\\\\''rgb\\(var\\(--apple-border\\)\\)'\\\\''/g' src/components/OperationsCounter.tsx)",
+      "Bash(perl -i -pe 's/ stroke=\"\"//g; s/ fill=\"\"//g' src/components/gates/CircuitEditor.tsx src/components/MemoryBit.tsx src/components/TheBus.tsx src/components/TheByte.tsx src/components/TheRegister.tsx src/components/gates/GateSymbol.tsx src/components/gates/OutputBulb.tsx)",
+      "Bash(echo \"Dev PID: $!\")",
+      "Bash(curl -s http://localhost:4321/lessons/memory-bit)",
+      "Bash(curl *)",
+      "Bash(kill 820)",
+      "Bash(wait)"
     ]
   }
 }

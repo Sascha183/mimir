@@ -143,7 +143,7 @@ export default function TheClock() {
 
   return (
     <div className="not-prose mx-auto my-12 w-full max-w-[760px] text-apple-text">
-      <div className="rounded-xl border border-apple-border bg-white p-5">
+      <div className="rounded-xl border border-apple-border bg-apple-surface p-5">
         <div className="space-y-3">
           <TimelineSignal label="clk" bits={CLK_ROW} activeIndex={tick} />
           <TimelineSignal label="clk_e" bits={CLK_E_ROW} activeIndex={tick} />
@@ -177,7 +177,7 @@ export default function TheClock() {
           className={`rounded-lg border px-5 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
             running
               ? 'border-apple-blue bg-apple-blue text-white shadow-md'
-              : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+              : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
           }`}
         >
           {running ? 'Pause' : 'Start'}
@@ -186,14 +186,14 @@ export default function TheClock() {
           type="button"
           onClick={step}
           disabled={running}
-          className="rounded-lg border border-apple-border bg-white px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-lg border border-apple-border bg-apple-surface px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Step
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset
         </button>

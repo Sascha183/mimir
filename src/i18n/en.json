@@ -61,5 +61,10 @@
     "ariaLabel": "Switch language",
     "en": "EN",
     "de": "DE"
+  },
+  "themeToggle": {
+    "ariaLabel": "Toggle dark mode",
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
   }
 }

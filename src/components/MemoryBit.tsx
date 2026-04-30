@@ -180,7 +180,7 @@ export default function MemoryBit() {
       </section>
 
       <div
-        className="relative w-full rounded-xl border border-apple-border bg-[#f5f5f7]"
+        className="relative w-full rounded-xl border border-apple-border bg-apple-frame"
         style={{
           maxWidth: CANVAS_W + 32,
           aspectRatio: `${CANVAS_W + 32} / ${CANVAS_H + 32}`,
@@ -232,14 +232,14 @@ export default function MemoryBit() {
               cy={topOut.y}
               r="4"
               className="transition-colors duration-300 motion-reduce:transition-none"
-              style={{ fill: qDisplay === 1 ? '#0071e3' : '#1d1d1f' }}
+              style={{ fill: qDisplay === 1 ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text))' }}
             />
             <circle
               cx={botOut.x}
               cy={botOut.y}
               r="4"
               className="transition-colors duration-300 motion-reduce:transition-none"
-              style={{ fill: qbarDisplay === 1 ? '#0071e3' : '#1d1d1f' }}
+              style={{ fill: qbarDisplay === 1 ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text))' }}
             />
 
             {/* Gates (drawn last so they sit on top of wires) */}
@@ -252,7 +252,7 @@ export default function MemoryBit() {
               y={qBulbCenter.y + 4}
               fontSize="14"
               fontWeight="600"
-              fill="#1d1d1f"
+              style={{ fill: "rgb(var(--apple-text))" }}
               stroke="none"
             >
               Q
@@ -262,7 +262,7 @@ export default function MemoryBit() {
               y={qbarBulbCenter.y + 4}
               fontSize="14"
               fontWeight="600"
-              fill="#6e6e73"
+              style={{ fill: "rgb(var(--apple-text-secondary))" }}
               stroke="none"
             >
               Q̄
@@ -309,7 +309,7 @@ export default function MemoryBit() {
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset to 0
         </button>
@@ -338,7 +338,7 @@ function PulseButton({
       className={`absolute left-0 flex h-11 w-20 -translate-y-1/2 items-center justify-center rounded-lg border text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
         pulsing
           ? 'border-apple-blue bg-apple-blue text-white shadow-md'
-          : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+          : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
       }`}
       style={{ top: `${topPct}%` }}
     >

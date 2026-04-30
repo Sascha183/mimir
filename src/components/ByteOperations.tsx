@@ -213,7 +213,7 @@ export default function ByteOperations() {
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset inputs
         </button>
@@ -248,7 +248,7 @@ function ByteInput({
   onChange: (i: number, v: Bit) => void;
 }) {
   return (
-    <div className="rounded-xl border border-apple-border bg-white p-4">
+    <div className="rounded-xl border border-apple-border bg-apple-surface p-4">
       <div className="text-center text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
         {label}
       </div>
@@ -284,7 +284,7 @@ function isCmpResult(r: ByteResult | CmpResult): r is CmpResult {
 
 function DeviceCard({ meta, result }: { meta: DeviceMeta; result: ByteResult | CmpResult }) {
   return (
-    <div className="rounded-xl border border-apple-border bg-white p-4">
+    <div className="rounded-xl border border-apple-border bg-apple-surface p-4">
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-mono text-base font-semibold tracking-wider text-apple-text">
           {meta.key}
@@ -328,7 +328,7 @@ function ByteOutput({ result }: { result: ByteResult }) {
             className={`rounded-full border px-2 py-0.5 font-mono ${
               result.flag.value === 1
                 ? 'border-apple-blue bg-apple-blue text-white'
-                : 'border-apple-border bg-white text-apple-text-secondary'
+                : 'border-apple-border bg-apple-surface text-apple-text-secondary'
             }`}
           >
             {result.flag.label}: {result.flag.value}
@@ -360,7 +360,7 @@ function Flag({ label, on }: { label: string; on: boolean }) {
       className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold tracking-wide ${
         on
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       {label}
@@ -377,7 +377,7 @@ function BitCell({ value }: { value: Bit }) {
       className={`flex h-8 w-8 items-center justify-center rounded-md border font-mono text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none ${
         isOn
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       {value}

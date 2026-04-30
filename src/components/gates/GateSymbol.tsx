@@ -48,7 +48,7 @@ export default function GateSymbol({ kind, x, y, size = 64, showLabel = true }: 
           textAnchor="middle"
           fontSize="10"
           fontWeight="500"
-          fill="#6e6e73"
+          style={{ fill: "rgb(var(--apple-text-secondary))" }}
           stroke="none"
         >
           {kind}

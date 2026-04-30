@@ -183,7 +183,7 @@ export default function TheByte() {
                   y1={0}
                   x2={cx}
                   y2={20}
-                  stroke={active ? '#0071e3' : '#86868b'}
+                  stroke={active ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text-secondary))'}
                   strokeWidth={2}
                   className="transition-colors duration-200 motion-reduce:transition-none"
                 />
@@ -227,7 +227,7 @@ export default function TheByte() {
                   y1={0}
                   x2={cx}
                   y2={36}
-                  stroke={flash ? '#0071e3' : '#86868b'}
+                  stroke={flash ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text-secondary))'}
                   strokeWidth={2}
                   className="transition-colors duration-200 motion-reduce:transition-none"
                 />
@@ -238,7 +238,7 @@ export default function TheByte() {
               y1={36}
               x2={COL_CENTER(COL_COUNT - 1)}
               y2={36}
-              stroke={flash ? '#0071e3' : '#86868b'}
+              stroke={flash ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text-secondary))'}
               strokeWidth={2}
               className="transition-colors duration-200 motion-reduce:transition-none"
             />
@@ -246,7 +246,7 @@ export default function TheByte() {
               x={COL_CENTER(COL_COUNT - 1) + 12}
               y={40}
               fontSize={12}
-              fill="#6e6e73"
+              style={{ fill: "rgb(var(--apple-text-secondary))" }}
               stroke="none"
             >
               s
@@ -262,7 +262,7 @@ export default function TheByte() {
               className={`rounded-lg border px-6 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
                 flash
                   ? 'border-apple-blue bg-apple-blue text-white shadow-md'
-                  : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+                  : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
               }`}
             >
               Store
@@ -270,7 +270,7 @@ export default function TheByte() {
             <button
               type="button"
               onClick={reset}
-              className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+              className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
             >
               Reset to 0
             </button>
@@ -315,7 +315,7 @@ function StoredBitCell({ value, flash }: { value: Bit; flash: boolean }) {
       className={`flex h-12 w-16 items-center justify-center rounded-lg border font-mono text-lg font-semibold transition-all duration-300 motion-reduce:transition-none ${
         isOn
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       } ${flash ? 'ring-2 ring-apple-blue ring-offset-2' : ''}`}
     >
       {value}

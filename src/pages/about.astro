@@ -1,5 +1,7 @@
 ---
 import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import ThemeBoot from '../components/ThemeBoot.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import {
   localizedAboutHref,
   localizedRootHref,
@@ -19,6 +21,7 @@ const locale: Locale = 'en';
     <meta name="description" content={t('about.metaDescription', locale)} />
     <title>{t('about.title', locale)}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <ThemeBoot />
   </head>
   <body class="min-h-screen font-sans">
     <header class="border-b border-apple-border/60 bg-apple-bg/80 backdrop-blur">
@@ -35,6 +38,7 @@ const locale: Locale = 'en';
             {t('nav.about', locale)}
           </a>
           <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
+          <ThemeToggle locale={locale} />
         </div>
       </nav>
     </header>

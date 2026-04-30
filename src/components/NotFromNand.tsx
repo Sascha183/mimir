@@ -197,7 +197,7 @@ export default function NotFromNand() {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-2 rounded-full border border-apple-border bg-white px-5 py-2.5 text-sm font-medium text-apple-text transition-colors duration-200 hover:bg-apple-bg/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 rounded-full border border-apple-border bg-apple-surface px-5 py-2.5 text-sm font-medium text-apple-text transition-colors duration-200 hover:bg-apple-bg/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
           >
             Reset
           </button>

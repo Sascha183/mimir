@@ -69,7 +69,7 @@ export default function CpuDiagram({ state, recipe }: Props) {
   );
 
   return (
-    <div className="space-y-4 rounded-xl border border-apple-border bg-white p-5">
+    <div className="space-y-4 rounded-xl border border-apple-border bg-apple-surface p-5">
       <RamPanel ram={state.ram} marAddress={state.registers.MAR} />
 
       <Bus bus={state.bus} />
@@ -117,7 +117,7 @@ export default function CpuDiagram({ state, recipe }: Props) {
                 className={`flex-1 rounded-md border px-2 py-1 text-center font-mono text-xs ${
                   active
                     ? 'border-apple-blue bg-apple-blue text-white'
-                    : 'border-apple-border bg-white text-apple-text-secondary'
+                    : 'border-apple-border bg-apple-surface text-apple-text-secondary'
                 }`}
               >
                 <div>{i + 1}</div>
@@ -163,7 +163,7 @@ function FlagBox({ flags }: { flags: FlagRegister }) {
   return (
     <div
       data-testid="flag-register"
-      className="rounded-lg border border-apple-border bg-white px-3 py-2"
+      className="rounded-lg border border-apple-border bg-apple-surface px-3 py-2"
     >
       <div className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
         FLAGS
@@ -195,7 +195,7 @@ function FlagCell({
       className={`flex h-8 w-10 flex-col items-center justify-center rounded-md border font-mono text-[10px] transition-colors duration-150 motion-reduce:transition-none ${
         on
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       <span className="text-[9px] opacity-70">{label}</span>

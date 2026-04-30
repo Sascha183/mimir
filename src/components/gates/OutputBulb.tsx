@@ -62,7 +62,7 @@ export function Bulb({ cx, cy, value, cordTop, r = 24 }: BulbGlyphProps) {
             rx="1.5"
             stroke="currentColor"
             strokeWidth="2"
-            fill="#fbfbfd"
+            style={{ fill: "rgb(var(--apple-bg))" }}
           />
         </>
       )}

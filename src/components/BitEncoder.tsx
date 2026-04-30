@@ -144,7 +144,7 @@ export default function BitEncoder() {
           onClick={removeBit}
           disabled={bits.length <= MIN_BITS}
           aria-label="Remove a bit"
-          className="rounded-full border border-apple-border bg-white px-3 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-3 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           − Remove a bit
         </button>
@@ -153,7 +153,7 @@ export default function BitEncoder() {
           onClick={addBit}
           disabled={bits.length >= MAX_BITS}
           aria-label="Add a bit"
-          className="rounded-full border border-apple-border bg-white px-3 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-3 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           + Add a bit
         </button>

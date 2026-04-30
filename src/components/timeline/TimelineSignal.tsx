@@ -50,7 +50,7 @@ export default function TimelineSignal({ label, bits, activeIndex, cellLabels }:
               className={`relative flex h-7 flex-1 items-center justify-center rounded-sm border font-mono text-[10px] transition-colors duration-150 motion-reduce:transition-none ${
                 on
                   ? 'border-apple-blue bg-apple-blue text-white'
-                  : 'border-apple-border bg-white text-apple-text-secondary'
+                  : 'border-apple-border bg-apple-surface text-apple-text-secondary'
               } ${isActive ? 'ring-2 ring-apple-blue ring-offset-1' : ''} ${
                 isPast && !isActive ? 'opacity-60' : ''
               }`}

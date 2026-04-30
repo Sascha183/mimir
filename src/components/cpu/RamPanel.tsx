@@ -13,7 +13,7 @@ interface Props {
 
 export default function RamPanel({ ram, marAddress }: Props) {
   return (
-    <div className="rounded-xl border border-apple-border bg-white p-3">
+    <div className="rounded-xl border border-apple-border bg-apple-surface p-3">
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
           RAM (16 bytes shown)
@@ -36,7 +36,7 @@ export default function RamPanel({ ram, marAddress }: Props) {
                   ? 'border-apple-blue bg-apple-blue text-white ring-2 ring-apple-blue/40'
                   : hasData
                     ? 'border-apple-border bg-apple-blue/10 text-apple-text'
-                    : 'border-apple-border bg-white text-apple-text-secondary'
+                    : 'border-apple-border bg-apple-surface text-apple-text-secondary'
               }`}
             >
               <div className="font-mono text-[9px] opacity-70">{i}</div>

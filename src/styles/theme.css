@@ -1,0 +1,46 @@
+/*
+ * Theme variables.
+ *
+ * Both modes are defined here. The active set is selected by whether
+ * <html> has the `.dark` class, which is set by ThemeBoot before paint
+ * based on (in order): localStorage `hciw-theme`, then prefers-color-scheme.
+ *
+ * Values are stored as space-separated RGB triples so Tailwind's
+ * `<alpha-value>` syntax (e.g. `bg-apple-bg/80`) works.
+ */
+
+:root {
+  --apple-bg: 251 251 253;
+  --apple-text: 29 29 31;
+  --apple-text-secondary: 110 110 115;
+  --apple-border: 210 210 215;
+  --apple-blue: 0 113 227;
+  --apple-surface: 255 255 255;
+  --apple-frame: 245 245 247;
+  --signal-off: 232 232 237;
+}
+
+.dark {
+  --apple-bg: 0 0 0;
+  --apple-text: 245 245 247;
+  --apple-text-secondary: 161 161 166;
+  --apple-border: 56 56 58;
+  --apple-blue: 10 132 255;
+  --apple-surface: 28 28 30;
+  --apple-frame: 44 44 46;
+  --signal-off: 58 58 60;
+  /* Tells the browser to render scrollbars and form controls in dark style. */
+  color-scheme: dark;
+}
+
+/*
+ * Disable the brief CSS transition flash that would otherwise play when the
+ * theme switches mid-page. Without this, every color-transitioned element
+ * (links on hover, buttons, etc.) animates from its old color to the new
+ * one when toggling. We only want the transition to apply on user
+ * interactions, not on the global theme swap.
+ */
+.theme-switching,
+.theme-switching * {
+  transition: none !important;
+}

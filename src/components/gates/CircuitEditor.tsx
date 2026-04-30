@@ -653,7 +653,7 @@ export default function CircuitEditor({
             ratio is locked to the SVG's so nothing distorts.
           */}
           <div
-            className="relative w-full rounded-xl border border-apple-border bg-[#f5f5f7]"
+            className="relative w-full rounded-xl border border-apple-border bg-apple-frame"
             style={{
               aspectRatio: `${FRAME_W} / ${FRAME_H}`,
               maxWidth: FRAME_W,
@@ -722,7 +722,7 @@ export default function CircuitEditor({
                       r="5"
                       stroke="none"
                       className="transition-colors duration-300 motion-reduce:transition-none"
-                      style={{ fill: isActive ? '#0071e3' : '#1d1d1f' }}
+                      style={{ fill: isActive ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text))' }}
                     />
                   </g>
                 );
@@ -778,7 +778,7 @@ export default function CircuitEditor({
                         height={40}
                         rx="6"
                         fill="none"
-                        stroke="#0071e3"
+                        style={{ stroke: "rgb(var(--apple-blue))" }}
                         strokeOpacity="0.35"
                         strokeWidth="1"
                       />
@@ -790,8 +790,10 @@ export default function CircuitEditor({
                         width={60}
                         height={40}
                         rx="6"
-                        fill="rgba(0, 113, 227, 0.08)"
-                        stroke="#0071e3"
+                        style={{
+                          fill: 'rgb(var(--apple-blue) / 0.08)',
+                          stroke: 'rgb(var(--apple-blue))',
+                        }}
                         strokeWidth="1.5"
                         strokeDasharray="4 3"
                       />
@@ -928,7 +930,7 @@ export default function CircuitEditor({
             {/* Error tooltip — also positioned as a percentage. */}
             {errorMsg && (
               <div
-                className="pointer-events-none absolute rounded-md bg-white px-2 py-1 text-xs font-medium text-red-600 shadow-md ring-1 ring-red-300"
+                className="pointer-events-none absolute rounded-md bg-apple-surface px-2 py-1 text-xs font-medium text-red-600 shadow-md ring-1 ring-red-300"
                 style={{
                   left: `${((errorMsg.at.x + 12) / FRAME_W) * 100 + (FRAME_PAD / FRAME_W) * 100}%`,
                   top: `${((errorMsg.at.y - 24) / FRAME_H) * 100 + (FRAME_PAD / FRAME_H) * 100}%`,
@@ -954,7 +956,7 @@ export default function CircuitEditor({
                 <button
                   type="button"
                   onClick={deleteSelected}
-                  className="rounded-full border border-red-300 bg-white px-4 py-1.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 motion-reduce:transition-none"
+                  className="rounded-full border border-red-300 bg-apple-surface px-4 py-1.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 motion-reduce:transition-none"
                 >
                   Delete
                 </button>
@@ -963,7 +965,7 @@ export default function CircuitEditor({
                 <button
                   type="button"
                   onClick={showSolution}
-                  className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+                  className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
                 >
                   Show solution
                 </button>
@@ -971,7 +973,7 @@ export default function CircuitEditor({
               <button
                 type="button"
                 onClick={reset}
-                className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+                className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
               >
                 Reset
               </button>
@@ -1028,7 +1030,7 @@ function PaletteItem({
       type="button"
       disabled={!enabled}
       onClick={() => onAdd(kind)}
-      className={`flex flex-col items-center gap-1 rounded-lg border border-apple-border bg-white p-2 transition-colors duration-200 motion-reduce:transition-none ${
+      className={`flex flex-col items-center gap-1 rounded-lg border border-apple-border bg-apple-surface p-2 transition-colors duration-200 motion-reduce:transition-none ${
         enabled
           ? 'cursor-pointer hover:border-apple-blue/40 active:bg-apple-bg/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2'
           : 'opacity-60'
@@ -1067,7 +1069,7 @@ function Port({
   const valid =
     !!pendingFrom && isDestPort(ref_) && !portRefEqual(pendingFrom, ref_);
 
-  const stroke = valid || hovered ? '#0071e3' : '#1d1d1f';
+  const stroke = valid || hovered ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text))';
   const r = hovered || valid ? PORT_R + 1 : PORT_R;
 
   return (
@@ -1088,7 +1090,7 @@ function Port({
           cy={point.y}
           r={r + 4}
           fill="none"
-          stroke="#0071e3"
+          style={{ stroke: "rgb(var(--apple-blue))" }}
           strokeWidth="1.5"
           opacity="0.35"
           style={{ pointerEvents: 'none' }}
@@ -1138,7 +1140,7 @@ function WireSelectable({
         <path
           d={path}
           fill="none"
-          stroke="#0071e3"
+          style={{ stroke: "rgb(var(--apple-blue))" }}
           strokeOpacity="0.25"
           strokeWidth="8"
           strokeLinecap="round"
@@ -1174,7 +1176,7 @@ function PendingWireGhost({
     <path
       d={path}
       fill="none"
-      stroke="#0071e3"
+      style={{ stroke: "rgb(var(--apple-blue))" }}
       strokeWidth="1.5"
       strokeDasharray="5 4"
       strokeLinecap="round"

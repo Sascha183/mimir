@@ -254,14 +254,14 @@ export default function RandomAccessMemory() {
         <button
           type="button"
           onClick={clearAll}
-          className="rounded-full border border-apple-border bg-white px-3 py-1 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-3 py-1 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Clear all
         </button>
       </div>
 
       {/* Selected cell readout */}
-      <div className="mx-auto mt-6 inline-block rounded-xl border border-apple-border bg-white px-5 py-3 text-center">
+      <div className="mx-auto mt-6 inline-block rounded-xl border border-apple-border bg-apple-surface px-5 py-3 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
           Cell at address {address}
         </p>
@@ -324,14 +324,14 @@ export default function RandomAccessMemory() {
           type="button"
           onClick={clearCell}
           aria-label={`Clear address ${address}`}
-          className="rounded-lg border border-apple-border bg-white px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-lg border border-apple-border bg-apple-surface px-4 py-2 text-sm font-medium text-apple-text transition-colors duration-200 hover:border-apple-blue/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Clear cell
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset
         </button>

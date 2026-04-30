@@ -206,7 +206,7 @@ export default function TheALU() {
   return (
     <div className="not-prose mx-auto my-12 w-full max-w-[760px] text-apple-text">
       {/* Op-select bar */}
-      <div className="rounded-xl border border-apple-border bg-white p-4">
+      <div className="rounded-xl border border-apple-border bg-apple-surface p-4">
         <div className="text-center text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
           Op-select (3 bits)
         </div>
@@ -260,7 +260,7 @@ export default function TheALU() {
                 className={`rounded-md border px-2 py-1.5 font-mono text-xs font-semibold tracking-wide transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
                   active
                     ? 'border-apple-blue bg-apple-blue text-white'
-                    : 'border-apple-border bg-white text-apple-text-secondary hover:text-apple-text'
+                    : 'border-apple-border bg-apple-surface text-apple-text-secondary hover:text-apple-text'
                 }`}
               >
                 {name}
@@ -290,14 +290,14 @@ export default function TheALU() {
         <button
           type="button"
           onClick={reset}
-          className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           Reset
         </button>
       </div>
 
       {/* Output */}
-      <div className="mt-6 rounded-xl border border-apple-border bg-white p-4">
+      <div className="mt-6 rounded-xl border border-apple-border bg-apple-surface p-4">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
             Output
@@ -354,7 +354,7 @@ function ByteInput({
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white p-4 transition-opacity duration-200 motion-reduce:transition-none ${
+      className={`rounded-xl border bg-apple-surface p-4 transition-opacity duration-200 motion-reduce:transition-none ${
         dimmed ? 'border-apple-border/60 opacity-50' : 'border-apple-border'
       }`}
       aria-label={dimmed ? `${label} (unused by current op)` : label}
@@ -403,7 +403,7 @@ function Flag({ label, on, testId }: { label: string; on: boolean; testId: strin
       className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold tracking-wide ${
         on
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       {label}
@@ -420,7 +420,7 @@ function BitCell({ value }: { value: Bit }) {
       className={`flex h-8 w-8 items-center justify-center rounded-md border font-mono text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none ${
         isOn
           ? 'border-apple-blue bg-apple-blue text-white'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       {value}

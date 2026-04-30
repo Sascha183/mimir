@@ -154,8 +154,8 @@ export default function TheRegister() {
   const outputDecimal = bitsToNumber(outputs);
   const outputBinary = bitsAsBinary(outputs);
 
-  const wireOff = '#86868b';
-  const wireOn = '#0071e3';
+  const wireOff = 'rgb(var(--apple-text-secondary))';
+  const wireOn = 'rgb(var(--apple-blue))';
 
   return (
     <div className="not-prose mx-auto my-12 w-full max-w-[680px] text-apple-text">
@@ -259,7 +259,7 @@ export default function TheRegister() {
               x={COL_CENTER(COL_COUNT - 1) + AND_INPUT_DX + 22}
               y={AND_INPUT_Y + 4}
               fontSize={12}
-              fill="#6e6e73"
+              style={{ fill: "rgb(var(--apple-text-secondary))" }}
               stroke="none"
             >
               e
@@ -345,7 +345,7 @@ export default function TheRegister() {
               className={`rounded-lg border px-6 py-2 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none ${
                 flash
                   ? 'border-apple-blue bg-apple-blue text-white shadow-md'
-                  : 'border-apple-border bg-white text-apple-text hover:border-apple-blue/40'
+                  : 'border-apple-border bg-apple-surface text-apple-text hover:border-apple-blue/40'
               }`}
             >
               Store
@@ -363,7 +363,7 @@ export default function TheRegister() {
             <button
               type="button"
               onClick={reset}
-              className="rounded-full border border-apple-border bg-white px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
+              className="rounded-full border border-apple-border bg-apple-surface px-4 py-1.5 text-xs font-medium text-apple-text-secondary transition-colors duration-200 hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 motion-reduce:transition-none"
             >
               Reset
             </button>
@@ -376,7 +376,7 @@ export default function TheRegister() {
         className="mt-8 grid grid-cols-1 gap-3 text-center sm:grid-cols-2"
         aria-live="polite"
       >
-        <div className="rounded-xl border border-apple-border bg-white px-4 py-3">
+        <div className="rounded-xl border border-apple-border bg-apple-surface px-4 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
             Stored byte
           </p>
@@ -398,7 +398,7 @@ export default function TheRegister() {
             </output>
           </p>
         </div>
-        <div className="rounded-xl border border-apple-border bg-white px-4 py-3">
+        <div className="rounded-xl border border-apple-border bg-apple-surface px-4 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">
             Output (after enabler)
           </p>
@@ -443,8 +443,8 @@ function BitCell({
   const onClasses = 'border-apple-blue bg-apple-blue text-white';
   const offClasses =
     tone === 'stored'
-      ? 'border-apple-border bg-white text-apple-text-secondary'
-      : 'border-apple-border bg-[#f5f5f7] text-apple-text-secondary';
+      ? 'border-apple-border bg-apple-surface text-apple-text-secondary'
+      : 'border-apple-border bg-apple-frame text-apple-text-secondary';
   return (
     <div
       role="status"

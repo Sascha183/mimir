@@ -166,7 +166,7 @@ export default function CircuitCanvas({
                 r="5"
                 stroke="none"
                 className="transition-colors duration-300 motion-reduce:transition-none"
-                style={{ fill: isActive ? '#0071e3' : '#1d1d1f' }}
+                style={{ fill: isActive ? 'rgb(var(--apple-blue))' : 'rgb(var(--apple-text))' }}
               />
             </g>
           );

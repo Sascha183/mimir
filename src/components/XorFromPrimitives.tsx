@@ -109,7 +109,7 @@ export default function XorFromPrimitives() {
 
       <div className="mt-2">
         {hintShown ? (
-          <p className="rounded-md border border-apple-border/60 bg-white/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
+          <p className="rounded-md border border-apple-border/60 bg-apple-surface/40 p-4 text-sm leading-relaxed text-apple-text-secondary">
             Think of two conditions that both need to be true:
             (1)&nbsp;&ldquo;at least one input is on&rdquo;, and
             (2)&nbsp;&ldquo;they are not both on&rdquo;. Each condition is a

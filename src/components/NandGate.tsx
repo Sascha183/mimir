@@ -57,7 +57,7 @@ export default function NandGate() {
   };
 
   return (
-    <div className="not-prose my-12 rounded-2xl border border-apple-border bg-white p-8 text-apple-text">
+    <div className="not-prose my-12 rounded-2xl border border-apple-border bg-apple-surface p-8 text-apple-text">
       <div className="mb-6 text-xs font-semibold uppercase tracking-widest text-apple-text-secondary">
         Try it — toggle the inputs
       </div>
@@ -136,7 +136,7 @@ function InputButton({
       className={`flex h-12 w-24 items-center justify-center gap-2 rounded-xl border font-mono text-base font-semibold transition-all duration-300 motion-reduce:transition-none ${
         isOn
           ? 'border-apple-blue bg-apple-blue text-white shadow-[0_2px_8px_rgba(0,113,227,0.25)]'
-          : 'border-apple-border bg-white text-apple-text-secondary hover:border-apple-text-secondary hover:text-apple-text'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary hover:border-apple-text-secondary hover:text-apple-text'
       } focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 focus-visible:ring-offset-white`}
     >
       <span className="opacity-70">{label}</span>
@@ -154,7 +154,7 @@ function Output({ value }: { value: Bit }) {
       className={`flex h-16 w-16 items-center justify-center rounded-full border font-mono text-2xl font-semibold transition-all duration-300 motion-reduce:transition-none ${
         isOn
           ? 'border-apple-blue bg-apple-blue text-white shadow-[0_2px_12px_rgba(0,113,227,0.3)]'
-          : 'border-apple-border bg-white text-apple-text-secondary'
+          : 'border-apple-border bg-apple-surface text-apple-text-secondary'
       }`}
     >
       {value}

@@ -19,7 +19,7 @@ interface Props {
 }
 
 const STATE_CLASSES: Record<RegisterBoxState, string> = {
-  idle: 'border-apple-border bg-white',
+  idle: 'border-apple-border bg-apple-surface',
   enabled: 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/40',
   set: 'border-apple-blue bg-apple-blue/10 ring-2 ring-apple-blue/40',
 };

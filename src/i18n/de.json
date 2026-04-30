@@ -61,5 +61,10 @@
     "ariaLabel": "Sprache wechseln",
     "en": "EN",
     "de": "DE"
+  },
+  "themeToggle": {
+    "ariaLabel": "Dunkles Design umschalten",
+    "switchToDark": "Auf dunkles Design wechseln",
+    "switchToLight": "Auf helles Design wechseln"
   }
 }

@@ -27,7 +27,7 @@ export default function AluBox({ alu, tmpValue }: Props) {
       className={`rounded-lg border px-4 py-3 text-center transition-colors duration-150 motion-reduce:transition-none ${
         active
           ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-500/40'
-          : 'border-apple-border bg-white'
+          : 'border-apple-border bg-apple-surface'
       }`}
     >
       <div className="text-[11px] font-semibold uppercase tracking-widest text-apple-text-secondary">

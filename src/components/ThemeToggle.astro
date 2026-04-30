@@ -1,0 +1,82 @@
+---
+import { t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props as Props;
+const ariaLabel = t('themeToggle.ariaLabel', locale);
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label={ariaLabel}
+  aria-pressed="false"
+  title={ariaLabel}
+  class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-apple-border text-apple-text-secondary transition-colors duration-200 hover:bg-apple-surface hover:text-apple-text focus:outline-none focus-visible:ring-2 focus-visible:ring-apple-blue focus-visible:ring-offset-2 focus-visible:ring-offset-apple-bg motion-reduce:transition-none"
+>
+  {/*
+    Both icons are rendered; CSS hides one based on `.dark` on <html>.
+    No JS needed for the icon swap — only for persisting the toggle.
+  */}
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    class="h-4 w-4 dark:hidden"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- Moon: shown in light mode (clicking switches TO dark) -->
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    class="hidden h-4 w-4 dark:block"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- Sun: shown in dark mode (clicking switches TO light) -->
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+</button>
+
+<script>
+  // Toggle handler. The initial theme was already applied pre-paint by
+  // ThemeBoot — this script only handles the click.
+  // The `theme-switching` class briefly suppresses CSS transitions during the
+  // swap so we don't flash a long color animation across the whole page.
+  document.querySelectorAll<HTMLButtonElement>('button[data-theme-toggle]').forEach((btn) => {
+    function syncPressed() {
+      const isDark = document.documentElement.classList.contains('dark');
+      btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+    }
+    syncPressed();
+
+    btn.addEventListener('click', () => {
+      const root = document.documentElement;
+      root.classList.add('theme-switching');
+      const isDark = root.classList.toggle('dark');
+      try {
+        localStorage.setItem('hciw-theme', isDark ? 'dark' : 'light');
+      } catch (_) {
+        /* private mode — toggle still works for the session */
+      }
+      // Drop the no-transition class on the next frame, after the new
+      // palette has settled.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => root.classList.remove('theme-switching'));
+      });
+      syncPressed();
+    });
+  });
+</script>
